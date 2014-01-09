@@ -1,5 +1,6 @@
 import collections
 import threading
+import os.path
 import eca
 
 
@@ -45,10 +46,10 @@ class PubSubChannel:
                 target(event, data)
 
 
-
 class NamespaceError(KeyError):
     """Exception raised for errors in the NamespaceDict."""
     pass
+
 
 class NamespaceDict(dict):
     """A dictionary that also allows access through attributes.
@@ -75,5 +76,5 @@ def describe_function(fn):
     parts.append(fn.__name__)
 
     parts.append(" ({}:{})".format(os.path.relpath(fn.__code__.co_filename), fn.__code__.co_firstlineno))
-    
+
     return ''.join(parts)
