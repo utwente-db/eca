@@ -3,13 +3,18 @@ import util
 import sys
 import os.path
 
+# all exported names
 __all__ = [
     'event',
     'condition',
     'rules',
     'Context',
-    'Event'
+    'Event',
+    'new_event'
 ]
+
+# The 'global' rules set
+rules = set()
 
 
 class Event:
@@ -70,7 +75,7 @@ class Context:
                 # 2) Only rules for which all conditions hold
                 for r in candidates:
                     if [c(self.scope, event) for c in r.conditions].count(True) == len(r.conditions):
-                        self._trace("Match: rule {}".format(describe_action(r)))
+                        self._trace("Match: rule {}".format(util.describe_function(r)))
                         result = r(self.scope, event)
 
             except queue.Empty:
@@ -78,16 +83,6 @@ class Context:
                 pass
 
 
-rules = set()
-
-
-def describe_action(fn):
-    parts = []
-    parts.append(fn.__name__)
-
-    parts.append(" ({}:{})".format(os.path.relpath(fn.__code__.co_filename), fn.__code__.co_firstlineno))
-    
-    return ''.join(parts)
 
 
 def prepare_action(fn):

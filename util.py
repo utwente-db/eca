@@ -67,3 +67,13 @@ class NamespaceDict(dict):
 
     def __delattr__(self, name):
         del self[name]
+
+
+def describe_function(fn):
+    """Generates a human readable reference to the given function."""
+    parts = []
+    parts.append(fn.__name__)
+
+    parts.append(" ({}:{})".format(os.path.relpath(fn.__code__.co_filename), fn.__code__.co_firstlineno))
+    
+    return ''.join(parts)
