@@ -70,11 +70,6 @@ class Context:
         self._trace("Received event: {}".format(event))
         self.event_queue.put(event)
 
-    def start(self):
-        """Starts the parallel processing of this context."""
-        self.thread = threading.Thread(target=self.run)
-        self.thread.start()
-
     def run(self):
         """Main event loop."""
         # set context for the current thread (regardless of which one it is)

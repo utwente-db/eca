@@ -15,7 +15,8 @@ def main():
     context = Context(trace=args.trace)
 
     # run worker
-    context.start()
+    thread = threading.Thread(target=context.run)
+    thread.start()
 
     with context_switch(context):
         new_event('init')
