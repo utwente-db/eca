@@ -2,6 +2,10 @@ import http.server
 import http.cookies
 import socketserver
 
+import os.path
+import posixpath
+import urllib
+
 DEFAULT_ERROR_MESSAGE = """\
 <!DOCTYPE html>
 <html>
@@ -84,6 +88,29 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         method = getattr(handler, method_name)
         method()
+
+    def translate_path(self, path):
+        """Translate a /-separated PATH to the local filename syntax.
+
+        Replace path translation with static web root.
+        """
+        # abandon query parameters
+        path = path.split('?',1)[0]
+        path = path.split('#',1)[0]
+        # Don't forget explicit trailing slash when normalizing. Issue17324
+        trailing_slash = path.rstrip().endswith('/')
+        path = posixpath.normpath(urllib.parse.unquote(path))
+        words = path.split('/')
+        words = filter(None, words)
+        path = self.server.static_path
+        for word in words:
+            drive, word = os.path.splitdrive(word)
+            head, word = os.path.split(word)
+            if word in (os.curdir, os.pardir): continue
+            path = os.path.join(path, word)
+        if trailing_slash:
+            path += '/'
+        return path
 
     # Standard HTTP verbs bound to dispatch method
     def do_GET(self): self.dispatch()

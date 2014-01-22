@@ -1,5 +1,6 @@
 from eca import *
 
+static_content_path = 'static'
 
 @event('init')
 def init(context, event):
