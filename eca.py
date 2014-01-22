@@ -75,9 +75,9 @@ class Context:
         # set context for the current thread (regardless of which one it is)
         with context_switch(self):
             while not self.done:
-                self._handle_one()
+                self._handle_event()
 
-    def _handle_one(self):
+    def _handle_event(self):
         """Handles a single event, or times out after receiving nothing."""
         try:
             # wait until we have an upcoming event
