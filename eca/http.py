@@ -1,4 +1,5 @@
 import http.server
+import http.cookies
 import socketserver
 
 DEFAULT_ERROR_MESSAGE = """\
@@ -65,6 +66,8 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     error_message_format = DEFAULT_ERROR_MESSAGE
+    server_version = 'EcaHTTP/2'
+    default_request_version = 'HTTP/1.1'
 
     def dispatch(self):
         """Dispath the request to a specialised handler if needed."""
