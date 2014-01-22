@@ -1,10 +1,10 @@
 import queue
-import util
 import collections
 import threading
 import sys
 
 from contextlib import contextmanager
+from . import util
 
 # all exported names
 __all__ = [
