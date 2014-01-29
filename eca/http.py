@@ -1,10 +1,13 @@
 import http.server
 import http.cookies
 import socketserver
+import logging
 
 import os.path
 import posixpath
 import urllib
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_ERROR_MESSAGE = """\
 <!DOCTYPE html>
@@ -56,18 +59,6 @@ body#error {
 </html>
 """
 
-class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
-    def __init__(self, server_address, RequestHandlerClass):
-        self.handlers = []
-        super().__init__(server_address, RequestHandlerClass)
-
-    def dispatch(self, method, path):
-        matches = [m for m in self.handlers if m[0] == method and path.startswith(m[1])]
-        if matches:
-            return max(matches, key=len)[2]
-        else:
-            return None
-
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     error_message_format = DEFAULT_ERROR_MESSAGE
     server_version = 'EcaHTTP/2'
@@ -75,8 +66,8 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def dispatch(self):
         """Dispath the request to a specialised handler if needed."""
-        handler = super()
-        method_name = "do_{}".format(self.command)
+        handler = self
+        method_name = "handle_{}".format(self.command)
 
         handler_class = self.server.dispatch(self.command, self.path)
         if handler_class:
@@ -118,3 +109,42 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_PUT(self): self.dispatch()
     def do_DELETE(self): self.dispatch()
     def do_HEAD(self): self.dispatch()
+
+    # fallback handlers for static content
+    def handle_GET(self): super().do_GET()
+    def handle_HEAD(self): super().do_HEAD()
+
+    # handle logging
+    def _log_data(self):
+        return {'address': self.client_address, 'location': self.path, 'method': self.command}
+    def log_message(self, format, *args):
+        logger.debug("[{}, {} {}] {}".format(self.client_address[0], self.command, self.path, format%args), extra=self._log_data())
+    def log_error(self, format, *args):
+        logger.warn("[{}, {} {}] {}".format(self.client_address[0], self.command, self.path, format%args), extra=self._log_data())
+
+
+class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    def __init__(self, server_address, RequestHandlerClass=HTTPRequestHandler):
+        self.handlers = []
+        super().__init__(server_address, RequestHandlerClass)
+
+    def dispatch(self, method, path):
+        matches = [m for m in self.handlers if (method in m[0] or '*' in m[0]) and path.startswith(m[1])]
+        if matches:
+            return max(matches, key=len)[2]
+        else:
+            return None
+
+    def add_handler(self, method, path, handler_class):
+        methods = [m.strip() for m in method.upper().split(',')]
+        self.handlers.append((methods, path, handler_class))
+
+    def serve_forever(self):
+        logger.info("Serving static content from: '{}'".format(self.static_path))
+        super().serve_forever()
+
+
+class Handler:
+    def __init__(self, handler):
+        self.handler = handler
+

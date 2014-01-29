@@ -1,10 +1,13 @@
 import queue
 import collections
 import threading
+import logging
 import sys
 
 from contextlib import contextmanager
 from . import util
+
+logger = logging.getLogger(__name__)
 
 # all exported names
 __all__ = [
@@ -54,16 +57,14 @@ class Context:
     context itself provides a run method to allow threaded execution.
 
     """
-    def __init__(self, trace=False):
+    def __init__(self):
         self.event_queue = queue.Queue()
         self.scope = util.NamespaceDict()
         self.done = False
-        self.trace = trace
 
     def _trace(self, message):
         """Prints tracing statements if trace is enabled."""
-        if self.trace:
-            print("({})".format(message), file=sys.stderr)
+        logging.getLogger('trace').info(message)
 
     def receive_event(self, event):
         """Receives an Event to handle."""
@@ -144,6 +145,8 @@ def prepare_action(fn):
     library.
 
     """
+    if not hasattr(fn, 'conditions'):
+        logger.info("Defined action '{}'".format(fn.__name__))
     fn.conditions = getattr(fn, 'conditions', [])
     fn.events = getattr(fn, 'events', set())
     rules.add(fn)
@@ -164,6 +167,7 @@ def condition(c):
     """
     def condition_decorator(fn):
         prepare_action(fn)
+        logger.debug("With condition: {}".format(util.describe_function(c)))
         fn.conditions.append(c)
         return fn
     return condition_decorator
@@ -181,6 +185,7 @@ def event(eventname):
     """
     def event_decorator(fn):
         prepare_action(fn)
+        logger.debug("Attached to event: {}".format(eventname))
         fn.events.add(eventname)
         return fn
     return event_decorator

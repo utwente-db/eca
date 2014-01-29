@@ -3,18 +3,38 @@ import argparse
 import threading
 import importlib
 import os.path
+import logging
 
 from eca import *
 
 import eca.http
 import http.cookies
 
+logger = logging.getLogger(__name__)
+
+def _hr_items(seq):
+    return ', '.join("'{}'".format(e) for e in seq)
+
+def log_level(level):
+    numeric_level = getattr(logging, level.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise argparse.ArgumentTypeError("'{}' is not a valid logging level. Choose from {}".format(level, _hr_items(log_level.allowed)))
+    return numeric_level
+
+log_level.allowed = ['debug', 'info', 'warning','error','critical']
 
 def main():
     parser = argparse.ArgumentParser(description='The Neca HTTP server.')
     parser.add_argument('-t', '--trace', default=False, action='store_true', help='Trace the execution of rules.')
-    parser.add_argument('-m', '--module', default='simple', help='The rules module to load.')
+    parser.add_argument('-l', '--log', default='warning', help="The log level to use. One of {} (defaults to '%(default)s')".format(_hr_items(log_level.allowed)), metavar='LEVEL', type=log_level)
+    parser.add_argument('-m', '--module', default='simple', help="The rules module to load (defaults to '%(default)s')")
     args = parser.parse_args()
+
+    # set logging level
+    logging.basicConfig(level=args.log)
+
+    if args.trace:
+        logging.getLogger('trace').setLevel(logging.DEBUG)
 
     # load module, and determine static content path
     rules_module = importlib.import_module(args.module)
@@ -27,13 +47,8 @@ def main():
         else:
             static_path = os.path.join(rules_path, rules_module.static_content_path)
 
-    print("Serving static content from: '{}'".format(static_path))
-
-    class HelloHandler:
-        def __init__(self, handler):
-            self.handler = handler
-
-        def do_GET(self):
+    class HelloHandler(eca.http.Handler):
+        def handle_GET(self):
             info = None
             if 'cookie' in self.handler.headers:
                 C = http.cookies.SimpleCookie()
@@ -52,14 +67,22 @@ def main():
 
             self.handler.wfile.write("<!DOCTYPE html><html><body><h1>Hello world!</h1><p><i>eca-session:</i> {}</p></body></html>".format(info).encode('utf-8'))
 
-    httpd = eca.http.HTTPServer(('',8000), eca.http.HTTPRequestHandler)
-    httpd.handlers += [('GET','/test', HelloHandler)]
+    class FallbackHandler(eca.http.Handler):
+        def handle_GET(self):
+            self.handler.handle_GET()
+
+        def handle_HEAD(self):
+            self.handler.handle_HEAD()
+
+    httpd = eca.http.HTTPServer(('',8000))
     httpd.static_path = static_path
+    httpd.add_handler('GET,HEAD', '/', FallbackHandler)
+    httpd.add_handler('*', '/test', HelloHandler)
     httpd.serve_forever()
 
 #    import simple
 #
-#    context = Context(trace=args.trace)
+#    context = Context()
 #
 #    # run worker
 #    thread = threading.Thread(target=context.run)
