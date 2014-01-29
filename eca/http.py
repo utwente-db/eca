@@ -66,18 +66,26 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def dispatch(self):
         """Dispath the request to a specialised handler if needed."""
-        handler = self
+        self.handler = self
         method_name = "handle_{}".format(self.command)
 
         handler_class = self.server.dispatch(self.command, self.path)
         if handler_class:
-            handler = handler_class(self)
+            self.handler = handler_class(self)
 
-        if not hasattr(handler, method_name):
+        if not hasattr(self.handler, method_name):
             self.send_error(501, "Unsupported method ({})".format(self.command))
             return
 
-        method = getattr(handler, method_name)
+        for filter_class in self.server.get_filters(self.command, self.path):
+            filter = filter_class(self)
+            if not hasattr(filter, method_name):
+                self.send_error(501, "Unsupported method ({})".format(self.command))
+                return
+            filter_method = getattr(filter, method_name)
+            filter_method()
+
+        method = getattr(self.handler, method_name)
         method()
 
     def translate_path(self, path):
@@ -126,18 +134,29 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     def __init__(self, server_address, RequestHandlerClass=HTTPRequestHandler):
         self.handlers = []
+        self.filters = []
         super().__init__(server_address, RequestHandlerClass)
 
     def dispatch(self, method, path):
         matches = [m for m in self.handlers if (method in m[0] or '*' in m[0]) and path.startswith(m[1])]
         if matches:
-            return max(matches, key=len)[2]
+            return max(matches, key=lambda e: len(e[1]))[2]
         else:
             return None
 
+    def get_filters(self, method, path):
+        matches = [f[2] for f in self.filters if (method in f[0] or '*' in f[0]) and path.startswith(f[1])]
+        return matches
+
     def add_handler(self, method, path, handler_class):
         methods = [m.strip() for m in method.upper().split(',')]
+        logger.debug("Adding HTTP request handler '{}.{}' for ({} {})".format(handler_class.__module__, handler_class.__name__, methods, path))
         self.handlers.append((methods, path, handler_class))
+
+    def add_filter(self, method, path, filter_class):
+        methods = [m.strip() for m in method.upper().split(',')]
+        logger.debug("Adding HTTP request filter '{}.{}' for ({} {})".format(filter_class.__module__, filter_class.__name__, methods, path))
+        self.filters.append((methods, path, filter_class))
 
     def serve_forever(self):
         logger.info("Serving static content from: '{}'".format(self.static_path))
@@ -145,6 +164,9 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 
 class Handler:
-    def __init__(self, handler):
-        self.handler = handler
+    def __init__(self, request):
+        self.request = request
 
+
+class Filter(Handler):
+    pass
