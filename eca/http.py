@@ -170,3 +170,70 @@ class Handler:
 
 class Filter(Handler):
     pass
+
+
+# Basic cookie filter
+class CookieFilter(Filter):
+    def handle_GET(self): self.handle()
+    def handle_POST(self): self.handle()
+    def handle_HEAD(self): self.handle()
+    def handle(self):
+        info = None
+        if 'cookie' in self.request.headers:
+            C = http.cookies.SimpleCookie()
+            C.load(self.request.headers['cookie'])
+            info = C['eca-session'].value
+        self.request.cookie_info = info
+
+        cookies = http.cookies.SimpleCookie()
+        #FIXME: context manager should cough up a cookie here
+        cookies['eca-session'] = 'foobar'
+        cookies['eca-session']['path'] = '/'
+
+        for c in cookies.output(header='',sep='\n').split('\n'):
+            self.request.send_header('set-cookie', c)
+
+
+# Some basic handlers
+
+class HelloWorld(Handler):
+    def handle_GET(self):
+        self.request.send_response(200)
+        self.request.send_header('content-type','text/html; charset=utf-8')
+        self.request.end_headers()
+
+        self.request.wfile.write("<!DOCTYPE html><html><body><h1>Hello world!</h1><p><i>eca-session:</i> {}</p></body></html>".format(self.request.cookie_info).encode('utf-8'))
+
+class StaticContent(Handler):
+    def handle_GET(self):
+        self.request.handle_GET()
+
+    def handle_HEAD(self):
+        self.request.handle_HEAD()
+
+def Redirect(realpath):
+    class RedirectHandler(Handler):
+        def handle_GET(self):
+            location = None
+    
+            if realpath.startswith("http:"):
+                location = realpath
+            else:
+                host = self.request.server.server_address[0]
+                if self.request.server.server_address[1] != 80:
+                    host += ":{}".format(self.request.server.server_address[1])
+    
+                if 'host' in self.request.headers:
+                    host = self.request.headers['host']
+    
+                location = "http://{}{}".format(host, realpath)
+
+            self.request.send_response(302)
+            self.request.send_header('content-type','text/html; charset=utf-8')
+            self.request.send_header('location',location)
+            self.request.end_headers()
+            self.request.wfile.write("<!DOCTYPE html><html><body><p>Redirect to <a href='{0}'>{0}</a></p></body></html>".format(location).encode('utf-8'))
+
+    return RedirectHandler
+
+

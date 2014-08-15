@@ -48,73 +48,14 @@ def main():
         else:
             static_path = os.path.join(rules_path, rules_module.static_content_path)
 
-    class HelloHandler(eca.http.Handler):
-        def handle_GET(self):
-            self.request.send_response(200)
-            self.request.send_header('content-type','text/html; charset=utf-8')
-            self.request.end_headers()
-
-            self.request.wfile.write("<!DOCTYPE html><html><body><h1>Hello world!</h1><p><i>eca-session:</i> {}</p></body></html>".format(self.request.cookie_info).encode('utf-8'))
-
-    class FallbackHandler(eca.http.Handler):
-        def handle_GET(self):
-            self.request.handle_GET()
-
-        def handle_HEAD(self):
-            self.request.handle_HEAD()
-
-    class EcaCookieFilter(eca.http.Filter):
-        def handle_GET(self): self.handle()
-        def handle_POST(self): self.handle()
-        def handle_HEAD(self): self.handle()
-        def handle(self):
-            info = None
-            if 'cookie' in self.request.headers:
-                C = http.cookies.SimpleCookie()
-                C.load(self.request.headers['cookie'])
-                info = C['eca-session'].value
-            self.request.cookie_info = info
-
-            cookies = http.cookies.SimpleCookie()
-            cookies['eca-session'] = 'foobar'
-            cookies['eca-session']['path'] = '/'
-
-            for c in cookies.output(header='',sep='\n').split('\n'):
-                self.request.send_header('set-cookie', c)
-
-    def redirect(realpath):
-        class RedirectHandler(eca.http.Handler):
-            def handle_GET(self):
-                location = None
-        
-                if realpath.startswith("http:"):
-                    location = realpath
-                else:
-                    host = self.request.server.server_address[0]
-                    if self.request.server.server_address[1] != 80:
-                        host += ":{}".format(self.request.server.server_address[1])
-        
-                    if 'host' in self.request.headers:
-                        host = self.request.headers['host']
-        
-                    location = "http://{}{}".format(host, realpath)
-    
-                self.request.send_response(200)
-                self.request.send_header('content-type','text/html; charset=utf-8')
-#                self.request.send_header('location',location)
-                self.request.end_headers()
-                self.request.wfile.write("<!DOCTYPE html><html><body><p>Redirect to <a href='{0}'>{0}</a></p></body></html>".format(location).encode('utf-8'))
-
-        return RedirectHandler
-
 
     httpd = eca.http.HTTPServer(('', args.port))
     httpd.static_path = static_path
-    httpd.add_handler('GET,HEAD', '/', FallbackHandler)
-    httpd.add_handler('*', '/test/', HelloHandler)
-    httpd.add_handler('*', '/wiki', redirect('http://www.wikipedia.net'))
-    httpd.add_handler('*', '/redir', redirect('/test/'))
-    httpd.add_filter('*', '/', EcaCookieFilter)
+    httpd.add_handler('GET,HEAD', '/', eca.http.StaticContent)
+    httpd.add_handler('*', '/test/', eca.http.HelloWorld)
+    httpd.add_handler('*', '/wiki', eca.http.Redirect('http://www.wikipedia.net'))
+    httpd.add_handler('*', '/redir', eca.http.Redirect('/test/'))
+    httpd.add_filter('*', '/', eca.http.CookieFilter)
     httpd.serve_forever()
 
 #    import simple
