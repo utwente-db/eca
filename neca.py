@@ -6,9 +6,7 @@ import os.path
 import logging
 
 from eca import *
-
 import eca.http
-import http.cookies
 
 # logging
 logger = logging.getLogger(__name__)
