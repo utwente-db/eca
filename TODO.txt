@@ -6,6 +6,7 @@
 [ ] Add basic Javascript handling of events
 [ ] Add a way to configure twitter (event generation) input thread
 [ ] Add control to event generation thread through HTTP interface
-[ ] Document all core modules
+[x] Document all core modules
 [ ] Add sample component of a graph/twitter list
 [ ] Come up with better name than 'ECA' to be more catchy
+[ ] Harden system against programmer error
