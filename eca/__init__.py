@@ -6,6 +6,7 @@ import sys
 
 from contextlib import contextmanager
 from . import util
+from . import pubsub
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,11 @@ class Context:
     def __init__(self):
         self.event_queue = queue.Queue()
         self.scope = util.NamespaceDict()
+        self.channel = pubsub.PubSubChannel()
         self.done = False
+
+        # subscribe to own pubsub channel to receive events
+        self.channel.subscribe(lambda e,d: self.receive_event(d), 'event')
 
     def _trace(self, message):
         """Prints tracing statements if trace is enabled."""
@@ -137,7 +142,7 @@ def new_event(eventname, data=None):
     e = Event(eventname, data)
     if getattr(thread_local, 'context', None) is None:
         raise NotImplementedError("Can't invoke new_event without a current context.")
-    thread_local.context.receive_event(e)
+    thread_local.context.channel.publish('event', e)
 
 
 def prepare_action(fn):

@@ -1,2 +1,0 @@
-The next line is true.
-The previous line is false.
