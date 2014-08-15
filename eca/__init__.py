@@ -24,7 +24,7 @@ __all__ = [
 # The 'global' rules set
 rules = set()
 
-# The thread local storage (used to createa a 'current context' with regards
+# The thread local storage used to create a 'current context' with regards
 # to the executing thread.
 # (See https://docs.python.org/3/library/threading.html#thread-local-data)
 thread_local = threading.local()
