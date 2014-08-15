@@ -7,6 +7,7 @@ import logging
 
 from eca import *
 import eca.http
+import eca.sessions
 
 # logging
 logger = logging.getLogger(__name__)
@@ -83,11 +84,12 @@ def main():
         #        default and overridable (or additive) in the rules module.
         httpd = eca.http.HTTPServer((args.ip, args.port))
         httpd.static_path = static_path
-        httpd.add_handler('GET,HEAD', '/', eca.http.StaticContent)
-        httpd.add_handler('*', '/hello/', eca.http.HelloWorld)
-        httpd.add_handler('*', '/wiki', eca.http.Redirect('http://www.wikipedia.net'))
-        httpd.add_handler('*', '/redir', eca.http.Redirect('/test/'))
-        httpd.add_filter('*', '/', eca.http.Cookies)
+        httpd.add_handler('/', eca.http.StaticContent, methods='GET,HEAD')
+        httpd.add_handler('/hello/', eca.http.HelloWorld)
+        httpd.add_handler('/wiki', eca.http.Redirect('http://www.wikipedia.net'))
+        httpd.add_handler('/redir', eca.http.Redirect('/test/'))
+        httpd.add_filter('/', eca.http.Cookies)
+        httpd.add_filter('/', eca.sessions.SessionManager('eca-session'))
         httpd.serve_forever()
     else:
         # create context

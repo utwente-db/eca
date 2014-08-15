@@ -97,6 +97,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         # apply filters to request
+        # note: filters are applied in order of registration
         for filter_class in self.server.get_filters(self.command, self.path):
             filter = filter_class(self)
             if not hasattr(filter, method_name):
@@ -206,22 +207,37 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
                 if (method in f.methods or '*' in f.methods) and path.startswith(f.path)]
 
     def _log_registration(self, kind, registration):
-        message_format = "Adding HTTP request {} '{}.{}' for ({} {})"
+        message_format = "Adding HTTP request {} {} for ({} {})"
         message = message_format.format(kind,
-                                        registration.handler.__module__,
-                                        registration.handler.__name__,
+                                        registration.handler,
                                         registration.methods,
                                         registration.path)
         logger.debug(message)
 
-    def add_handler(self, method, path, handler_class):
-        methods = [m.strip() for m in method.upper().split(',')]
+    def add_handler(self, path, handler_class, methods="GET"):
+        """
+        Adds a request handler to the server.
+
+        The handler can be specialised in in or more request methods by
+        providing a comma separated list of methods. Handlers are matched
+        longest-matching-prefix with regards to paths.
+        """
+        methods = [m.strip() for m in methods.upper().split(',')]
         reg = HandlerRegistration(methods, path, handler_class)
         self._log_registration('handler', reg)
         self.handlers.append(reg)
 
-    def add_filter(self, method, path, filter_class):
-        methods = [m.strip() for m in method.upper().split(',')]
+    def add_filter(self, path, filter_class, methods="*"):
+        """
+        Adds a filter to the server.
+
+        Like handlers, filters can be specialised on in or more request methods
+        by providing a comma-separated list of methods. Filters are selected on
+        match prefix with regards to paths.
+
+        Filters are applied in order of registration.
+        """
+        methods = [m.strip() for m in methods.upper().split(',')]
         reg = HandlerRegistration(methods, path, filter_class)
         self._log_registration('filter', reg)
         self.filters.append(reg)
@@ -260,19 +276,6 @@ class Cookies(Filter):
         if 'cookie' in self.request.headers:
             cookies.load(self.request.headers['cookie'])
         self.request.cookies = cookies
-
-class EcaCookie(Filter):
-    def handle(self):
-        # determine new cookie
-        cookies = http.cookies.SimpleCookie()
-        #FIXME: context manager should cough up a cookie here
-        cookies['eca-session'] = 'foobar'
-        cookies['eca-session']['path'] = '/'
-
-        # set new cookie
-        for c in cookies.output(header='',sep='\n').split('\n'):
-            self.request.send_header('set-cookie', c)
-
 
 # Some basic handlers
 
