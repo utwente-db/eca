@@ -7,8 +7,10 @@ import os.path
 import posixpath
 import urllib
 
+# Logging
 logger = logging.getLogger(__name__)
 
+# Hard-coded default error message
 DEFAULT_ERROR_MESSAGE = """\
 <!DOCTYPE html>
 <html>
@@ -60,23 +62,39 @@ body#error {
 """
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    """
+    This request handler routes requests to a specialised handler.
+
+    Handling a request is roughly done in two steps:
+      1) Requests are first passed through matching registered filters
+      2) Request is passed to the matching handler.
+
+    Responsibility for selecting the handler is left to the server class.
+    """
     error_message_format = DEFAULT_ERROR_MESSAGE
     server_version = 'EcaHTTP/2'
     default_request_version = 'HTTP/1.1'
 
     def dispatch(self):
-        """Dispath the request to a specialised handler if needed."""
+        """Dispatch incoming requests."""
+        # start out with using fallback handling
         self.handler = self
+
+        # the method we will be looking for
+        # (uses HTTP method name to build Python method name)
         method_name = "handle_{}".format(self.command)
 
+        # let server determine specialised handler class, and instance it
         handler_class = self.server.dispatch(self.command, self.path)
         if handler_class:
             self.handler = handler_class(self)
 
+        # check for necessary HTTP method
         if not hasattr(self.handler, method_name):
             self.send_error(501, "Unsupported method ({})".format(self.command))
             return
 
+        # apply filters to request
         for filter_class in self.server.get_filters(self.command, self.path):
             filter = filter_class(self)
             if not hasattr(filter, method_name):
@@ -85,13 +103,16 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             filter_method = getattr(filter, method_name)
             filter_method()
 
+        # select and invoke actual method
         method = getattr(self.handler, method_name)
         method()
 
     def translate_path(self, path):
-        """Translate a /-separated PATH to the local filename syntax.
+        """
+        Translate a /-separated PATH to the local filename syntax.
 
-        Replace path translation with static web root.
+        This method is unelegantly 'borrowed' from SimpleHTTPServer.py to change
+        the original so that it has the `path = self.server.static_path' line.
         """
         # abandon query parameters
         path = path.split('?',1)[0]
@@ -101,6 +122,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         path = posixpath.normpath(urllib.parse.unquote(path))
         words = path.split('/')
         words = filter(None, words)
+        # server content from static_path, instead of os.getcwd()
         path = self.server.static_path
         for word in words:
             drive, word = os.path.splitdrive(word)
@@ -118,44 +140,75 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_DELETE(self): self.dispatch()
     def do_HEAD(self): self.dispatch()
 
-    # fallback handlers for static content
+    # Fallback handlers for static content
+    # (These invoke the original SimpleHTTPRequestHandler behaviour)
     def handle_GET(self): super().do_GET()
     def handle_HEAD(self): super().do_HEAD()
 
     # handle logging
     def _log_data(self):
-        return {'address': self.client_address, 'location': self.path, 'method': self.command}
+        return {
+            'address': self.client_address,
+            'location': self.path,
+            'method': self.command
+        }
+
+    #overload logging methods
     def log_message(self, format, *args):
-        logger.debug("[{}, {} {}] {}".format(self.client_address[0], self.command, self.path, format%args), extra=self._log_data())
+        message_format = "[{}, {} {}] {}".format(self.client_address[0], 
+                                                 self.command, 
+                                                 self.path, 
+                                                 format%args)
+        logger.debug(message_format, extra=self._log_data())
+
     def log_error(self, format, *args):
-        logger.warn("[{}, {} {}] {}".format(self.client_address[0], self.command, self.path, format%args), extra=self._log_data())
+        message_format = "[{}, {} {}] {}".format(self.client_address[0], 
+                                                 self.command, 
+                                                 self.path, 
+                                                 format%args)
+        logger.warn(message_format, extra=self._log_data())
 
 
 class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    """
+    HTTP Server with dispatch functionality to allow simple configuration of
+    served content.
+    """
     def __init__(self, server_address, RequestHandlerClass=HTTPRequestHandler):
         self.handlers = []
         self.filters = []
         super().__init__(server_address, RequestHandlerClass)
 
     def dispatch(self, method, path):
+        """Selects the best matching handler."""
+        # Select handlers for the given method, that match any path or a prefix of the given path
         matches = [m for m in self.handlers if (method in m[0] or '*' in m[0]) and path.startswith(m[1])]
+
+        # if there are matches, we select the one with the longest matching prefix
         if matches:
             return max(matches, key=lambda e: len(e[1]))[2]
         else:
             return None
 
     def get_filters(self, method, path):
+        """Selects all applicable filters."""
+        # Select all filters that the given method, that match any path or a suffix of the given path
         matches = [f[2] for f in self.filters if (method in f[0] or '*' in f[0]) and path.startswith(f[1])]
         return matches
 
+    def _log_registration(self, kind, klass, methods, path):
+        message_format = "Adding HTTP request {} '{}.{}' for ({} {})"
+        message = message_format.format(kind, klass.__module__, klass.__name__, methods, path)
+        logger.debug(message)
+
     def add_handler(self, method, path, handler_class):
         methods = [m.strip() for m in method.upper().split(',')]
-        logger.debug("Adding HTTP request handler '{}.{}' for ({} {})".format(handler_class.__module__, handler_class.__name__, methods, path))
+        self._log_registration('handler', handler_class, methods, path)
         self.handlers.append((methods, path, handler_class))
 
     def add_filter(self, method, path, filter_class):
         methods = [m.strip() for m in method.upper().split(',')]
-        logger.debug("Adding HTTP request filter '{}.{}' for ({} {})".format(filter_class.__module__, filter_class.__name__, methods, path))
+        self._log_registration('filter', filter_class, methods, path)
         self.filters.append((methods, path, filter_class))
 
     def serve_forever(self):
@@ -164,32 +217,44 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 
 class Handler:
+    """
+    Handler base class.
+    """
     def __init__(self, request):
         self.request = request
 
 
 class Filter(Handler):
-    pass
-
-
-# Basic cookie filter
-class CookieFilter(Filter):
+    """
+    Filter base class that does nothing.
+    """
     def handle_GET(self): self.handle()
     def handle_POST(self): self.handle()
     def handle_HEAD(self): self.handle()
     def handle(self):
-        info = None
-        if 'cookie' in self.request.headers:
-            C = http.cookies.SimpleCookie()
-            C.load(self.request.headers['cookie'])
-            info = C['eca-session'].value
-        self.request.cookie_info = info
+        pass
 
+
+# Cookie filters
+
+class Cookies(Filter):
+    """Filter to read cookies from request."""
+    def handle(self):
+        # process available cookies
+        cookies = http.cookies.SimpleCookie()
+        if 'cookie' in self.request.headers:
+            cookies.load(self.request.headers['cookie'])
+        self.request.cookies = cookies
+
+class EcaCookie(Filter):
+    def handle(self):
+        # determine new cookie
         cookies = http.cookies.SimpleCookie()
         #FIXME: context manager should cough up a cookie here
         cookies['eca-session'] = 'foobar'
         cookies['eca-session']['path'] = '/'
 
+        # set new cookie
         for c in cookies.output(header='',sep='\n').split('\n'):
             self.request.send_header('set-cookie', c)
 
@@ -197,14 +262,28 @@ class CookieFilter(Filter):
 # Some basic handlers
 
 class HelloWorld(Handler):
+    """The mandatory Hello World example."""
     def handle_GET(self):
         self.request.send_response(200)
         self.request.send_header('content-type','text/html; charset=utf-8')
         self.request.end_headers()
 
-        self.request.wfile.write("<!DOCTYPE html><html><body><h1>Hello world!</h1><p><i>eca-session:</i> {}</p></body></html>".format(self.request.cookie_info).encode('utf-8'))
+        output = "<!DOCTYPE html><html><body><h1>Hello world!</h1><p><i>eca-session:</i> {}</p></body></html>"
+
+        try:
+            if not hasattr(self.request, 'cookies'): raise KeyError()
+            cookie = self.request.cookies['eca-session'].value
+        except KeyError:
+            cookie = '<i>no cookie</i>';
+        
+        self.request.wfile.write(output.format(cookie).encode('utf-8'))
 
 class StaticContent(Handler):
+    """
+    Explicit fallback handler.
+
+    This can be used to configure complex sub-paths.
+    """
     def handle_GET(self):
         self.request.handle_GET()
 
@@ -212,11 +291,15 @@ class StaticContent(Handler):
         self.request.handle_HEAD()
 
 def Redirect(realpath):
+    """
+    Factory for redirection handlers.
+    """
     class RedirectHandler(Handler):
         def handle_GET(self):
             location = None
-    
-            if realpath.startswith("http:"):
+
+            # check for absolute paths
+            if realpath.startswith("http://") or realpath.startswith('https://'):
                 location = realpath
             else:
                 host = self.request.server.server_address[0]
@@ -232,7 +315,8 @@ def Redirect(realpath):
             self.request.send_header('content-type','text/html; charset=utf-8')
             self.request.send_header('location',location)
             self.request.end_headers()
-            self.request.wfile.write("<!DOCTYPE html><html><body><p>Redirect to <a href='{0}'>{0}</a></p></body></html>".format(location).encode('utf-8'))
+            output = "<!DOCTYPE html><html><body><p>Redirect to <a href='{0}'>{0}</a></p></body></html>"
+            self.request.wfile.write(output.format(location).encode('utf-8'))
 
     return RedirectHandler
 

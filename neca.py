@@ -55,7 +55,7 @@ def main():
     httpd.add_handler('*', '/test/', eca.http.HelloWorld)
     httpd.add_handler('*', '/wiki', eca.http.Redirect('http://www.wikipedia.net'))
     httpd.add_handler('*', '/redir', eca.http.Redirect('/test/'))
-    httpd.add_filter('*', '/', eca.http.CookieFilter)
+    httpd.add_filter('*', '/', eca.http.Cookies)
     httpd.serve_forever()
 
 #    import simple
