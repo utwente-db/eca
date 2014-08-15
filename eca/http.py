@@ -7,6 +7,8 @@ import os.path
 import posixpath
 import urllib
 
+from collections import namedtuple
+
 # Logging
 logger = logging.getLogger(__name__)
 
@@ -85,7 +87,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         method_name = "handle_{}".format(self.command)
 
         # let server determine specialised handler class, and instance it
-        handler_class = self.server.dispatch(self.command, self.path)
+        handler_class = self.server.get_handler(self.command, self.path)
         if handler_class:
             self.handler = handler_class(self)
 
@@ -168,48 +170,61 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                                  format%args)
         logger.warn(message_format, extra=self._log_data())
 
+HandlerRegistration = namedtuple('HandlerRegistration',['methods','path','handler'])
 
 class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     """
-    HTTP Server with dispatch functionality to allow simple configuration of
-    served content.
+    HTTP Server with path/method registration functionality to allow simple
+    configuration of served content.
     """
     def __init__(self, server_address, RequestHandlerClass=HTTPRequestHandler):
         self.handlers = []
         self.filters = []
         super().__init__(server_address, RequestHandlerClass)
 
-    def dispatch(self, method, path):
+    def get_handler(self, method, path):
         """Selects the best matching handler."""
         # Select handlers for the given method, that match any path or a prefix of the given path
-        matches = [m for m in self.handlers if (method in m[0] or '*' in m[0]) and path.startswith(m[1])]
+        matches = [m
+                   for m
+                   in self.handlers
+                   if (method in m.methods or '*' in m.methods) and path.startswith(m.path)]
 
         # if there are matches, we select the one with the longest matching prefix
         if matches:
-            return max(matches, key=lambda e: len(e[1]))[2]
+            best = max(matches, key=lambda e: len(e.path))
+            return best.handler
         else:
             return None
 
     def get_filters(self, method, path):
         """Selects all applicable filters."""
         # Select all filters that the given method, that match any path or a suffix of the given path
-        matches = [f[2] for f in self.filters if (method in f[0] or '*' in f[0]) and path.startswith(f[1])]
-        return matches
+        return [f.handler
+                for f
+                in self.filters
+                if (method in f.methods or '*' in f.methods) and path.startswith(f.path)]
 
-    def _log_registration(self, kind, klass, methods, path):
+    def _log_registration(self, kind, registration):
         message_format = "Adding HTTP request {} '{}.{}' for ({} {})"
-        message = message_format.format(kind, klass.__module__, klass.__name__, methods, path)
+        message = message_format.format(kind,
+                                        registration.handler.__module__,
+                                        registration.handler.__name__,
+                                        registration.methods,
+                                        registration.path)
         logger.debug(message)
 
     def add_handler(self, method, path, handler_class):
         methods = [m.strip() for m in method.upper().split(',')]
-        self._log_registration('handler', handler_class, methods, path)
-        self.handlers.append((methods, path, handler_class))
+        reg = HandlerRegistration(methods, path, handler_class)
+        self._log_registration('handler', reg)
+        self.handlers.append(reg)
 
     def add_filter(self, method, path, filter_class):
         methods = [m.strip() for m in method.upper().split(',')]
-        self._log_registration('filter', filter_class, methods, path)
-        self.filters.append((methods, path, filter_class))
+        reg = HandlerRegistration(methods, path, filter_class)
+        self._log_registration('filter', reg)
+        self.filters.append(reg)
 
     def serve_forever(self):
         logger.info("Serving static content from: '{}'".format(self.static_path))
