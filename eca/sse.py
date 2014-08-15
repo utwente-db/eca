@@ -1,13 +1,25 @@
 from . import http
 import queue
 
+from collection import namedtuple
+
+PendingEvent = namedtuple('PendingEvent', ['data', 'name', 'id'])
+
 class ServerSideEvents(http.Handler):
+    """
+    Base class for server side events. See the specification of the W3C
+    at http://dev.w3.org/html5/eventsource/
+    
+    This class handles decoupling through the default Queue. Events can be
+    posted for transmission by using send_event.
+    """
+
     def __init__(self, request):
         super().__init__(request)
         self.queue = queue.Queue()
 
-    def send_event(self, target, event):
-        self.queue.put(event)
+    def send_event(self, data, name=None, id=None):
+        self.queue.put(PendingEvent(data, name id))
 
     def go_subscribe(self):
         pass
@@ -35,10 +47,15 @@ class ServerSideEvents(http.Handler):
 
     def _send_message(self, event):
         try:
-            event_line = "event: {}\n".format(event.name)
-            self.request.wfile.write(event_line.encode('utf-8'))
+            if event.id is not None:
+                id_line = "id: {}\n".format(event.id)
+                self.request.wfile.write(id_line.encode('utf-8'))
 
-            data_line = "data: {}\n".format(event.json)
+            if event.name is not None:
+                event_line = "event: {}\n".format(event.name)
+                self.request.wfile.write(event_line.encode('utf-8'))
+
+            data_line = "data: {}\n".format(event.data)
             self.request.wfile.write(data_line.encode('utf-8'))
 
             self.request.wfile.write("\n".encode('utf-8'))
