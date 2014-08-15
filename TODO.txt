@@ -1,5 +1,5 @@
 [x] Refactor handlers in neca.py to eca/http.py
-[ ] Add session manager to lazy-create new Contexts
+[x] Add session manager to lazy-create new Contexts
 [ ] Context switching through session manager
 [x] Add SSE handler to allow event-based pushes
 [ ] Add pubsub for SSE handlers to allow emitting from within ECA context
