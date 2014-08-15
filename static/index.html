@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Neca Test</title>
+<link rel="stylesheet" href="style.css"/>
+<script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+</head>
+<body>
+<h1>Neca Test</h1>
+<script>
+console.log("^_^");
+
+e = new EventSource('/events');
+e.addEventListener('test', function(d) {
+    console.log("Received ",d);
+});
+</script>
+</body>
+</html>
