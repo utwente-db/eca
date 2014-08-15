@@ -23,7 +23,9 @@ __all__ = [
 # The 'global' rules set
 rules = set()
 
-# The thread local storage (used for 'current context' queries)
+# The thread local storage (used to createa a 'current context' with regards
+# to the executing thread.
+# (See https://docs.python.org/3/library/threading.html#thread-local-data)
 thread_local = threading.local()
 
 
@@ -51,11 +53,12 @@ class Event:
 
 
 class Context:
-    """ECA Execution context.
+    """
+    ECA Execution context to track scope and events.
 
     Each context maintains both a variables namespace and an event queue. The
-    context itself provides a run method to allow threaded execution.
-
+    context itself provides a run method to allow threaded execution through
+    starting a new thread targetted at the run method.
     """
     def __init__(self):
         self.event_queue = queue.Queue()
@@ -73,7 +76,7 @@ class Context:
 
     def run(self):
         """Main event loop."""
-        # set context for the current thread (regardless of which one it is)
+        # switch context to this one and start working
         with context_switch(self):
             while not self.done:
                 self._handle_event()
@@ -99,18 +102,18 @@ class Context:
                     result = r(self.scope, event)
 
         except queue.Empty:
-            # Timeout on waiting, loop to check condition
+            # Timeout on waiting
             pass
 
 
 @contextmanager
 def context_switch(context):
-    """Context manager to allow ad-hoc context switches.
+    """
+    Context manager to allow ad-hoc context switches.
 
     This function can be written without any regard for locking as the
     thread_local object will take care of that. Since everything here is done
     in the same thread, this effectively allows nesting of context switches.
-
     """
     # stash old context
     old_context = getattr(thread_local, 'context', None)
@@ -126,10 +129,10 @@ def context_switch(context):
 
 
 def new_event(eventname, data=None):
-    """Emits a new event.
+    """
+    Emits a new event.
 
     This function emits a new event to react on.
-
     """
     e = Event(eventname, data)
     if getattr(thread_local, 'context', None) is None:
@@ -138,12 +141,12 @@ def new_event(eventname, data=None):
 
 
 def prepare_action(fn):
-    """Prepares a function to be usable as an action.
+    """
+    Prepares a function to be usable as an action.
 
     This function assigns an empty list of the 'conditions' attribute if it is
     not yet available. This function also registers the action with the action
     library.
-
     """
     if not hasattr(fn, 'conditions'):
         logger.info("Defined action '{}'".format(fn.__name__))
@@ -153,7 +156,8 @@ def prepare_action(fn):
 
 
 def condition(c):
-    """Adds a condition callable to the action.
+    """
+    Adds a condition callable to the action.
 
     The condition must be callable. The condition will receive a context and
     an event, and must return True or False.
@@ -174,14 +178,14 @@ def condition(c):
 
 
 def event(eventname):
-    """Attaches the action to an event.
+    """
+    Attaches the action to an event.
 
     This is effectively the same as adding the 'event.name == eventname'
     condition. Adding multiple event names will prevent the rule from
     triggering.
 
     As condition, this function generates a decorator.
-
     """
     def event_decorator(fn):
         prepare_action(fn)
