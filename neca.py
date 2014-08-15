@@ -84,7 +84,7 @@ def main():
         httpd = eca.http.HTTPServer((args.ip, args.port))
         httpd.static_path = static_path
         httpd.add_handler('GET,HEAD', '/', eca.http.StaticContent)
-        httpd.add_handler('*', '/test/', eca.http.HelloWorld)
+        httpd.add_handler('*', '/hello/', eca.http.HelloWorld)
         httpd.add_handler('*', '/wiki', eca.http.Redirect('http://www.wikipedia.net'))
         httpd.add_handler('*', '/redir', eca.http.Redirect('/test/'))
         httpd.add_filter('*', '/', eca.http.Cookies)
