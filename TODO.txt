@@ -1,7 +1,7 @@
 [x] Refactor handlers in neca.py to eca/http.py
 [ ] Add session manager to lazy-create new Contexts
 [ ] Context switching through session manager
-[ ] Add SSE handler to allow event-based pushes
+[x] Add SSE handler to allow event-based pushes
 [ ] Add pubsub for SSE handlers to allow emitting from within ECA context
 [ ] Add basic Javascript handling of events
 [ ] Add a way to configure twitter (event generation) input thread
@@ -9,4 +9,4 @@
 [x] Document all core modules
 [ ] Add sample component of a graph/twitter list
 [ ] Come up with better name than 'ECA' to be more catchy
-[ ] Harden system against programmer error
+[ ] Harden system against programmer error (i.e. sanity check all rules-module data flow)
