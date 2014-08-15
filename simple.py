@@ -7,11 +7,11 @@ def init(context, event):
     context.silent = False
 
 
-@event('message')
+@event('main')
 @condition(lambda c, e: not c.silent)
 def fizz_bang(context, event):
     print("Fizz Bang!")
-    print(event)
+    print("Printing an event now:" + str(event))
     new_event('ping', {'a': 10})
 
 
