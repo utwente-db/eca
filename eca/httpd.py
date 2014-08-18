@@ -154,26 +154,28 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     # handle logging
     def _log_data(self):
+        path = getattr(self, 'path','<unknown path>')
+        command = getattr(self, 'command', '<unknown command>')
         return {
             'address': self.client_address,
-            'location': self.path,
-            'method': self.command
+            'location': path,
+            'method': command
         }
+
+    def _get_message_format(self, format, args):
+        log_data = self._log_data()
+        message_format = "[{}, {} {}] {}".format(self.client_address[0], 
+                                                 log_data['method'], 
+                                                 log_data['location'], 
+                                                 format%args)
+        return message_format
 
     #overload logging methods
     def log_message(self, format, *args):
-        message_format = "[{}, {} {}] {}".format(self.client_address[0], 
-                                                 self.command, 
-                                                 self.path, 
-                                                 format%args)
-        logger.debug(message_format, extra=self._log_data())
+        logger.debug(self._get_message_format(format, args), extra=self._log_data())
 
     def log_error(self, format, *args):
-        message_format = "[{}, {} {}] {}".format(self.client_address[0], 
-                                                 self.command, 
-                                                 self.path, 
-                                                 format%args)
-        logger.warn(message_format, extra=self._log_data())
+        logger.warn(self._get_message_format(format, args), extra=self._log_data())
 
 HandlerRegistration = namedtuple('HandlerRegistration',['methods','path','handler'])
 
