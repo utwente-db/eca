@@ -3,11 +3,9 @@ from collections import namedtuple, Mapping
 from itertools import product, chain
 import time
 import random
-import json
 
-from .http import Filter, Handler
-from .sse import ServerSideEvents
-from . import Context, context_activate, fire_event, get_context
+from . import httpd
+from . import Context, context_activate
 
 
 # Name generation for contexts and sessions
@@ -49,7 +47,7 @@ def name_parts():
 names =  map('-'.join, chain.from_iterable((product(*p) for p in name_parts())))
 
 
-class SessionCookie(Filter):
+class SessionCookie(httpd.Filter):
     """
     The actual HTTP filter that will apply the cookie handling logic to each
     request. This filter defers to the SessionManager with respect to the
@@ -127,58 +125,3 @@ class SessionManager:
             self.sessions[name] = self._new_session(name)
         self.sessions[name].activate()
 
-
-def GenerateEvent(name):
-    """
-    This function returns a handler class that creates the named event based
-    on the posted JSON data.
-    """
-    class EventHandler(Handler):
-        def handle_POST(self):
-            # handle weirdness
-            if 'content-length' not in self.request.headers:
-                self.request.send_error(411)
-                return
-
-            # read content-length header
-            length = int(self.request.headers['content-length'])
-
-            # grab data
-            data = self.request.rfile.read(length)
-            try:
-                structured = json.loads(data.decode('utf-8'))
-            except ValueError as e:
-                self.request.send_error(400, "Bad request: "+str(e))
-                return
-
-            if not isinstance(structured, Mapping):
-                self.request.send_error(400, "Bad request: expect a JSON object")
-                return
-
-            try:
-                fire_event(name, structured)
-            except NotImplementedError:
-                # FIXME: logging here with hint about needing a SessionManager
-                self.request.send_error(500, "No current context available.")
-                return
-
-            self.request.send_response(202)
-            self.request.send_header('content-type', 'text/plain; charset=utf-8')
-            self.request.send_header('content-length', 0)
-            self.request.end_headers()
-
-    return EventHandler
-
-
-class EmittedEvents(ServerSideEvents):
-    def go_subscribe(self):
-        def receiver(name, data):
-            self.send_event(data.json, data.name, data.id)
-
-        self.receiver = receiver
-        context = get_context()
-        context.channel.subscribe(self.receiver, 'emit')
-
-    def go_unsubscribe(self):
-        context = get_context()
-        context.channel.unsubscribe(self.receiver, 'emit')

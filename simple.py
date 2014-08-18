@@ -1,14 +1,12 @@
 from eca import *
 import eca.http
-import eca.sessions
 
 #static_content_path = 'static'
 
 def add_request_handlers(httpd):
-    httpd.add_route('/hello/', eca.http.HelloWorld)
     httpd.add_route('/wiki', eca.http.Redirect('http://www.wikipedia.net'))
     httpd.add_route('/redir', eca.http.Redirect('/test/'))
-    httpd.add_route('/test', eca.sessions.GenerateEvent('request'), methods=['POST'])
+    httpd.add_route('/test', eca.http.GenerateEvent('request'), methods=['POST'])
 
 
 @event('init')

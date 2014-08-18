@@ -6,8 +6,8 @@ import os.path
 import logging
 
 from eca import *
+import eca.httpd
 import eca.http
-import eca.sessions
 
 # logging
 logger = logging.getLogger(__name__)
@@ -80,14 +80,14 @@ def main():
                 static_path = os.path.join(rules_path, rules_module.static_content_path)
 
         # configure http server
-        httpd = eca.http.HTTPServer((args.ip, args.port))
+        httpd = eca.httpd.HTTPServer((args.ip, args.port))
         # default static route
         httpd.add_content('/', static_path)
         # default events route
-        httpd.add_route('/events', eca.sessions.EmittedEvents)
+        httpd.add_route('/events', eca.http.EventStream)
         # default handlers for cookies and sessions
         httpd.add_filter('/', eca.http.Cookies)
-        httpd.add_filter('/', eca.sessions.SessionManager('eca-session'))
+        httpd.add_filter('/', eca.http.SessionManager('eca-session'))
 
         # invoke module specific configuration
         if hasattr(rules_module, 'add_request_handlers'):

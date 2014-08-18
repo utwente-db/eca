@@ -1,11 +1,11 @@
-from . import http
 import queue
-
 from collections import namedtuple
+
+from . import httpd
 
 PendingEvent = namedtuple('PendingEvent', ['data', 'name', 'id'])
 
-class ServerSideEvents(http.Handler):
+class ServerSideEvents(httpd.Handler):
     """
     Base class for server side events. See the specification of the W3C
     at http://dev.w3.org/html5/eventsource/
@@ -63,7 +63,5 @@ class ServerSideEvents(http.Handler):
 
             return True
         except IOError:
-            return False
-        except:
             return False
 
