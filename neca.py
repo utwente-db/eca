@@ -29,8 +29,57 @@ def log_level(level):
 log_level.allowed = ['debug', 'info', 'warning','error','critical']
 
 
+def main_server(args, rules_module):
+    """
+    HTTP server entry point.
+    """
+    # determine initial static content path 
+    rules_path = os.path.dirname(os.path.abspath(rules_module.__file__))
+    static_path = os.path.join(rules_path, 'static')
+
+    # see if an override has been given (absolute or relative)
+    if hasattr(rules_module, 'static_content_path'):
+        if os.path.isabs(rules_module.static_content_path):
+            static_path = rules_module.static_content_path
+        else:
+            static_path = os.path.join(rules_path, rules_module.static_content_path)
+
+    # configure http server
+    httpd = eca.httpd.HTTPServer((args.ip, args.port))
+    # default static route
+    httpd.add_content('/', static_path)
+    # default events route
+    httpd.add_route('/events', eca.http.EventStream)
+    # default handlers for cookies and sessions
+    httpd.add_filter('/', eca.http.Cookies)
+    httpd.add_filter('/', eca.http.SessionManager('eca-session'))
+
+    # invoke module specific configuration
+    if hasattr(rules_module, 'add_request_handlers'):
+        rules_module.add_request_handlers(httpd)
+    
+    # start serving
+    httpd.serve_forever()
+
+def main_engine(args, rules_module):
+    """
+    Rules engine only entry point.
+    """
+    # create context
+    context = Context()
+    context.start(daemon=False)
+
+    with context_switch(context):
+        logger.info("Starting module '{}'...".format(args.module))
+        fire_event('main')
+
+
 def main():
+    """
+    Main program entry point.
+    """
     parser = argparse.ArgumentParser(description='The Neca HTTP server.')
+    parser.set_defaults(entry_point=main_engine)
     parser.add_argument('module',
                         default='simple',
                         help="The rules module to load (defaults to %(default)s).",
@@ -45,8 +94,9 @@ def main():
                         metavar='LEVEL',
                         type=log_level)
     parser.add_argument('-s','--server',
-                        action='store_true',
-                        default=False,
+                        dest='entry_point',
+                        action='store_const',
+                        const=main_server,
                         help='Start HTTP server instead of directly executing the module.')
     parser.add_argument('-p', '--port',
                         default=8080,
@@ -67,42 +117,7 @@ def main():
     # load module, and determine static content path
     rules_module = importlib.import_module(args.module)
 
-    if args.server:
-        # determine initial static content path 
-        rules_path = os.path.dirname(os.path.abspath(rules_module.__file__))
-        static_path = os.path.join(rules_path, 'static')
-    
-        # see if an override has been given (absolute or relative)
-        if hasattr(rules_module, 'static_content_path'):
-            if os.path.isabs(rules_module.static_content_path):
-                static_path = rules_module.static_content_path
-            else:
-                static_path = os.path.join(rules_path, rules_module.static_content_path)
-
-        # configure http server
-        httpd = eca.httpd.HTTPServer((args.ip, args.port))
-        # default static route
-        httpd.add_content('/', static_path)
-        # default events route
-        httpd.add_route('/events', eca.http.EventStream)
-        # default handlers for cookies and sessions
-        httpd.add_filter('/', eca.http.Cookies)
-        httpd.add_filter('/', eca.http.SessionManager('eca-session'))
-
-        # invoke module specific configuration
-        if hasattr(rules_module, 'add_request_handlers'):
-            rules_module.add_request_handlers(httpd)
-        
-        # start serving
-        httpd.serve_forever()
-    else:
-        # create context
-        context = Context()
-        context.start()
-
-        with context_switch(context):
-            logger.info("Starting module '{}'...".format(args.module))
-            fire_event('main')
+    args.entry_point(args, rules_module)
 
 if __name__ == "__main__":
     main()
