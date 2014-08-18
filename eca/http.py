@@ -189,7 +189,7 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
         matches = [m
                    for m
                    in self.handlers
-                   if (method in m.methods or '*' in m.methods) and path.startswith(m.path)]
+                   if (not m.methods or method in m.methods) and path.startswith(m.path)]
 
         # if there are matches, we select the one with the longest matching prefix
         if matches:
@@ -204,7 +204,7 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
         return [f.handler
                 for f
                 in self.filters
-                if (method in f.methods or '*' in f.methods) and path.startswith(f.path)]
+                if (not f.methods or method in f.methods) and path.startswith(f.path)]
 
     def _log_registration(self, kind, registration):
         message_format = "Adding HTTP request {} {} for ({} {})"
@@ -214,7 +214,7 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
                                         registration.path)
         logger.debug(message)
 
-    def add_handler(self, path, handler_class, methods="GET"):
+    def add_handler(self, path, handler_class, methods=["GET"]):
         """
         Adds a request handler to the server.
 
@@ -222,12 +222,11 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
         providing a comma separated list of methods. Handlers are matched
         longest-matching-prefix with regards to paths.
         """
-        methods = [m.strip() for m in methods.upper().split(',')]
         reg = HandlerRegistration(methods, path, handler_class)
         self._log_registration('handler', reg)
         self.handlers.append(reg)
 
-    def add_filter(self, path, filter_class, methods="*"):
+    def add_filter(self, path, filter_class, methods=[]):
         """
         Adds a filter to the server.
 
@@ -237,7 +236,6 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
         Filters are applied in order of registration.
         """
-        methods = [m.strip() for m in methods.upper().split(',')]
         reg = HandlerRegistration(methods, path, filter_class)
         self._log_registration('filter', reg)
         self.filters.append(reg)

@@ -84,22 +84,20 @@ def main():
         #        default and overridable (or additive) in the rules module.
         httpd = eca.http.HTTPServer((args.ip, args.port))
         httpd.static_path = static_path
-        httpd.add_handler('/', eca.http.StaticContent, methods='GET,HEAD')
-        httpd.add_handler('/hello/', eca.http.HelloWorld)
-        httpd.add_handler('/wiki', eca.http.Redirect('http://www.wikipedia.net'))
-        httpd.add_handler('/redir', eca.http.Redirect('/test/'))
-        httpd.add_handler('/test', eca.sessions.GenerateEvent('request'), methods='POST')
+
+        httpd.add_handler('/', eca.http.StaticContent, methods=['GET','HEAD'])
         httpd.add_handler('/events', eca.sessions.EmittedEvents)
         httpd.add_filter('/', eca.http.Cookies)
         httpd.add_filter('/', eca.sessions.SessionManager('eca-session'))
+
+        if hasattr(rules_module, 'add_request_handlers'):
+            rules_module.add_request_handlers(httpd)
+
         httpd.serve_forever()
     else:
         # create context
         context = Context()
-
-        # run worker
-        thread = threading.Thread(target=context.run)
-        thread.start()
+        context.start()
 
         with context_switch(context):
             logger.info("Starting module '{}'...".format(args.module))

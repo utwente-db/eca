@@ -3,6 +3,8 @@
 [x] Context switching through session manager
 [x] Add SSE handler to allow event-based pushes
 [x] Add pubsub for SSE handlers to allow emitting from within ECA context
+[ ] Rework static file handling to not be the exception to normal operations
+[ ] maybe create @condition that sees 1/2 params?
 [ ] Add basic Javascript handling of events
 [ ] Add a way to configure twitter (event generation) input thread
 [ ] Add control to event generation thread through HTTP interface
