@@ -78,21 +78,22 @@ def main():
                 static_path = rules_module.static_content_path
             else:
                 static_path = os.path.join(rules_path, rules_module.static_content_path)
-    
-        # configure specialised handlers on HTTP server
-        # FIXME: This should be done in a config.py, or preferably using a sane
-        #        default and overridable (or additive) in the rules module.
-        httpd = eca.http.HTTPServer((args.ip, args.port))
-        httpd.static_path = static_path
 
-        httpd.add_handler('/', eca.http.StaticContent, methods=['GET','HEAD'])
-        httpd.add_handler('/events', eca.sessions.EmittedEvents)
+        # configure http server
+        httpd = eca.http.HTTPServer((args.ip, args.port))
+        # default static route
+        httpd.add_content('/', static_path)
+        # default events route
+        httpd.add_route('/events', eca.sessions.EmittedEvents)
+        # default handlers for cookies and sessions
         httpd.add_filter('/', eca.http.Cookies)
         httpd.add_filter('/', eca.sessions.SessionManager('eca-session'))
 
+        # invoke module specific configuration
         if hasattr(rules_module, 'add_request_handlers'):
             rules_module.add_request_handlers(httpd)
-
+        
+        # start serving
         httpd.serve_forever()
     else:
         # create context
@@ -101,7 +102,7 @@ def main():
 
         with context_switch(context):
             logger.info("Starting module '{}'...".format(args.module))
-            new_event('main')
+            fire_event('main')
 
 if __name__ == "__main__":
     main()

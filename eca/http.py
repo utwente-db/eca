@@ -79,17 +79,20 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def dispatch(self):
         """Dispatch incoming requests."""
-        # start out with using fallback handling
-        self.handler = self
+        self.handler = None
 
         # the method we will be looking for
         # (uses HTTP method name to build Python method name)
         method_name = "handle_{}".format(self.command)
 
-        # let server determine specialised handler class, and instance it
-        handler_class = self.server.get_handler(self.command, self.path)
-        if handler_class:
-            self.handler = handler_class(self)
+        # let server determine specialised handler factory, and call it
+        handler_factory = self.server.get_handler(self.command, self.path)
+        if not handler_factory:
+            self.send_error(404)
+            return
+
+        # instantiate handler
+        self.handler = handler_factory(self)
 
         # check for necessary HTTP method
         if not hasattr(self.handler, method_name):
@@ -98,8 +101,8 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         # apply filters to request
         # note: filters are applied in order of registration
-        for filter_class in self.server.get_filters(self.command, self.path):
-            filter = filter_class(self)
+        for filter_factory in self.server.get_filters(self.command, self.path):
+            filter = filter_factory(self)
             if not hasattr(filter, method_name):
                 self.send_error(501, "Unsupported method ({})".format(self.command))
                 return
@@ -120,13 +123,14 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         # abandon query parameters
         path = path.split('?',1)[0]
         path = path.split('#',1)[0]
+        path = path[len(self.url_path):]
         # Don't forget explicit trailing slash when normalizing. Issue17324
         trailing_slash = path.rstrip().endswith('/')
         path = posixpath.normpath(urllib.parse.unquote(path))
         words = path.split('/')
         words = filter(None, words)
         # server content from static_path, instead of os.getcwd()
-        path = self.server.static_path
+        path = self.local_path
         for word in words:
             drive, word = os.path.splitdrive(word)
             head, word = os.path.split(word)
@@ -214,7 +218,7 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
                                         registration.path)
         logger.debug(message)
 
-    def add_handler(self, path, handler_class, methods=["GET"]):
+    def add_route(self, path, handler_factory, methods=["GET"]):
         """
         Adds a request handler to the server.
 
@@ -222,11 +226,23 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
         providing a comma separated list of methods. Handlers are matched
         longest-matching-prefix with regards to paths.
         """
-        reg = HandlerRegistration(methods, path, handler_class)
+        reg = HandlerRegistration(methods, path, handler_factory)
         self._log_registration('handler', reg)
         self.handlers.append(reg)
 
-    def add_filter(self, path, filter_class, methods=[]):
+    def add_content(self, path, local_path, methods=['GET','HEAD']):
+        """
+        Adds a StaticContent handler to the server.
+
+        This method is shorthand for
+        self.add_route(path, StaticContent(path, local_path), methods)
+        """
+        if path.endswith('/'):
+            logger.warn("Static content configured with trailing '/'. "+
+                        "This is different from traditional behaviour.")
+        self.add_route(path, StaticContent(path, local_path), methods)
+
+    def add_filter(self, path, filter_factory, methods=[]):
         """
         Adds a filter to the server.
 
@@ -236,12 +252,12 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
         Filters are applied in order of registration.
         """
-        reg = HandlerRegistration(methods, path, filter_class)
+        reg = HandlerRegistration(methods, path, filter_factory)
         self._log_registration('filter', reg)
         self.filters.append(reg)
 
     def serve_forever(self):
-        logger.info("Serving static content from: '{}'".format(self.static_path))
+        logger.info("Server is running...")
         super().serve_forever()
 
 
@@ -273,9 +289,11 @@ class Cookies(Filter):
         cookies = http.cookies.SimpleCookie()
         if 'cookie' in self.request.headers:
             cookies.load(self.request.headers['cookie'])
+
+        # set cookies on request
         self.request.cookies = cookies
 
-# Some basic handlers
+
 
 class HelloWorld(Handler):
     """The mandatory Hello World example."""
@@ -294,17 +312,27 @@ class HelloWorld(Handler):
         
         self.request.wfile.write(output.format(cookie).encode('utf-8'))
 
-class StaticContent(Handler):
-    """
-    Explicit fallback handler.
 
-    This can be used to configure complex sub-paths.
-    """
-    def handle_GET(self):
-        self.request.handle_GET()
+def StaticContent(url_path, local_path):
+    class StaticContent(Handler):
+        """
+        Explicit fallback handler.
+        """
+        def set_paths(self):
+            self.request.local_path = local_path
+            self.request.url_path = url_path
+            
+        def handle_GET(self):
+            self.set_paths()
+            self.request.handle_GET()
 
-    def handle_HEAD(self):
-        self.request.handle_HEAD()
+        def handle_HEAD(self):
+            self.set_paths()
+            self.request.handle_HEAD()
+
+    # return class so that it can be constructed
+    return StaticContent
+
 
 def Redirect(realpath):
     """
