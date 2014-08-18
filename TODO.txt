@@ -1,8 +1,8 @@
 [x] Refactor handlers in neca.py to eca/http.py
 [x] Add session manager to lazy-create new Contexts
-[ ] Context switching through session manager
+[x] Context switching through session manager
 [x] Add SSE handler to allow event-based pushes
-[ ] Add pubsub for SSE handlers to allow emitting from within ECA context
+[x] Add pubsub for SSE handlers to allow emitting from within ECA context
 [ ] Add basic Javascript handling of events
 [ ] Add a way to configure twitter (event generation) input thread
 [ ] Add control to event generation thread through HTTP interface
