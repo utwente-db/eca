@@ -24,7 +24,7 @@ def init(context, event):
 def fizz_bang(context, event):
     print("Fizz Bang!")
     print("Printing an event now:" + str(event))
-    fire_event('ping', {'a': 10})
+    fire('ping', {'a': 10})
 
 
 @event('ping')

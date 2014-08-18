@@ -73,7 +73,7 @@ def main_engine(args, rules_module):
 
     with context_switch(context):
         logger.info("Starting module '{}'...".format(args.module))
-        fire_event('main')
+        fire('main')
 
 
 def main():

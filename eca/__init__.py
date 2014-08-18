@@ -18,7 +18,7 @@ __all__ = [
     'rules',
     'Context',
     'Event',
-    'fire_event',
+    'fire',
     'emit',
     'get_context',
     'context_activate',
@@ -160,16 +160,16 @@ def get_context():
     return getattr(thread_local, 'context', None)
 
 
-def fire_event(eventname, data=None):
+def fire(eventname, data=None):
     """
     Fires an event.
 
-    This function emits a new event to react on.
+    This is the fire-and-forget method to create new events.
     """
     e = Event(eventname, data)
     context = get_context()
     if context is None:
-        raise NotImplementedError("Can't invoke fire_event without a current context.")
+        raise NotImplementedError("Can't invoke fire without a current context.")
     context.channel.publish('event', e)
 
 def emit(name, data, id=None):
