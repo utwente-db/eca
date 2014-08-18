@@ -39,16 +39,16 @@ def main_server(args, rules_module):
     static_path = os.path.join(rules_path, 'static')
 
     # see if an override has been given (absolute or relative)
-    if hasattr(rules_module, 'static_content_path'):
-        if os.path.isabs(rules_module.static_content_path):
-            static_path = rules_module.static_content_path
+    if hasattr(rules_module, 'root_content_path'):
+        if os.path.isabs(rules_module.root_content_path):
+            root_path = rules_module.root_content_path
         else:
-            static_path = os.path.join(rules_path, rules_module.static_content_path)
+            root_path = os.path.join(rules_path, rules_module.root_content_path)
 
     # configure http server
     httpd = eca.httpd.HTTPServer((args.ip, args.port))
-    # default static route
-    httpd.add_content('/', static_path)
+    # default root route
+    httpd.add_content('/', root_path)
     # default events route
     httpd.add_route('/events', eca.http.EventStream)
     # default handlers for cookies and sessions

@@ -237,8 +237,8 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
         This method is shorthand for
         self.add_route(path, StaticContent(path, local_path), methods)
         """
-        if path.endswith('/'):
-            logger.warn("Static content configured with trailing '/'. "+
+        if not path.endswith('/'):
+            logger.warn("Static content configured without trailing '/'. "+
                         "This is different from traditional behaviour.")
         self.add_route(path, StaticContent(path, local_path), methods)
 

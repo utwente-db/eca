@@ -3,7 +3,7 @@ import eca.http
 
 # configuration
 
-static_content_path = 'static'
+root_content_path = 'static'
 
 def add_request_handlers(httpd):
     httpd.add_route('/wiki', eca.http.Redirect('http://www.wikipedia.net'))
