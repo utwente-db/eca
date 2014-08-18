@@ -77,22 +77,28 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     server_version = 'EcaHTTP/2'
     default_request_version = 'HTTP/1.1'
 
-    # the following two methods are needed for a work-around of a bug observed
-    # at least on a Python 3.3.2 platform under Mac OS 10.6.8...
-    def buffer_header(self, key, value):
-        if not hasattr(self, '_cached_headers'):
-            self._cached_headers = []
-        self._cached_headers.append("{}: {}\r\n".format(key, value).encode('latin1','strict'))
+    def send_header(self, key, value):
+        """Buffer headers until they can be sent."""
+        if not self.response_sent:
+            if not hasattr(self, '_cached_headers'):
+                self._cached_headers = []
+            self._cached_headers.append((key,value))
+        else:
+            super().send_header(key, value)
 
     def send_response(self, *args, **kwargs):
+        """Sends the necessary response, and appends buffered headers."""
         super().send_response(*args, **kwargs)
+        self.response_sent = True
         if hasattr(self, '_cached_headers'):
-            self.wfile.write(b"".join(self._cached_headers))
+            for h in self._cached_headers:
+                self.send_header(*h)
             self._cached_headers = []
 
     def dispatch(self):
         """Dispatch incoming requests."""
         self.handler = None
+        self.response_sent = False
 
         # the method we will be looking for
         # (uses HTTP method name to build Python method name)
