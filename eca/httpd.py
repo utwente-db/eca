@@ -77,31 +77,18 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     server_version = 'EcaHTTP/2'
     default_request_version = 'HTTP/1.1'
 
-    # the following are needed for a work-around of a bug observed at least on
-    # a Python 3.3.2 platform under Mac OS 10.6.8...
-    # This is a direct clone from a working version of the standard library
-    def send_header(self, keyword, value):
-        """Send a MIME header."""
-        if self.request_version != 'HTTP/0.9':
-            if not hasattr(self, '_headers_buffer'):
-                self._headers_buffer = []
-            self._headers_buffer.append(
-                ("%s: %s\r\n" % (keyword, value)).encode('latin1', 'strict'))
+    # the following two methods are needed for a work-around of a bug observed
+    # at least on a Python 3.3.2 platform under Mac OS 10.6.8...
+    def buffer_header(self, key, value):
+        if not hasattr(self, '_cached_headers'):
+            self._cached_headers = []
+        self._cached_headers.append("{}: {}\r\n".format(key, value).encode('latin1','strict'))
 
-        if keyword.lower() == 'connection':
-            if value.lower() == 'close':
-                self.close_connection = 1
-            elif value.lower() == 'keep-alive':
-                self.close_connection = 0
-
-
-    def end_headers(self):
-        """Send the blank line ending the MIME headers."""
-        if self.request_version != 'HTTP/0.9':
-            self._headers_buffer.append(b"\r\n")
-            self.wfile.write(b"".join(self._headers_buffer))
-            self._headers_buffer = []
-
+    def send_response(self, *args, **kwargs):
+        super().send_response(*args, **kwargs)
+        if hasattr(self, '_cached_headers'):
+            self.wfile.write(b"".join(self._cached_headers))
+            self._cached_headers = []
 
     def dispatch(self):
         """Dispatch incoming requests."""

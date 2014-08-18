@@ -74,7 +74,7 @@ class SessionCookie(httpd.Filter):
             cookies[self.manager.cookie]['path'] = '/'
 
             # Send the new cookie as header
-            self.request.send_header('Set-Cookie', cookies[self.manager.cookie].output(header=''))
+            self.request.buffer_header('Set-Cookie', cookies[self.manager.cookie].OutputString())
         else:
             value = morsel.value
 
