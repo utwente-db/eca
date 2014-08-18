@@ -89,6 +89,7 @@ def main():
         httpd.add_handler('/wiki', eca.http.Redirect('http://www.wikipedia.net'))
         httpd.add_handler('/redir', eca.http.Redirect('/test/'))
         httpd.add_handler('/test', eca.sessions.GenerateEvent('request'), methods='POST')
+        httpd.add_handler('/events', eca.sessions.EmittedEvents)
         httpd.add_filter('/', eca.http.Cookies)
         httpd.add_filter('/', eca.sessions.SessionManager('eca-session'))
         httpd.serve_forever()

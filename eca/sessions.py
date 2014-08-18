@@ -6,7 +6,8 @@ import random
 import json
 
 from .http import Filter, Handler
-from . import Context, context_activate, new_event
+from .sse import ServerSideEvents
+from . import Context, context_activate, fire_event, get_context
 
 
 # Name generation for contexts and sessions
@@ -155,7 +156,7 @@ def GenerateEvent(name):
                 return
 
             try:
-                new_event(name, structured)
+                fire_event(name, structured)
             except NotImplementedError:
                 # FIXME: logging here with hint about needing a SessionManager
                 self.request.send_error(500, "No current context available.")
@@ -169,3 +170,15 @@ def GenerateEvent(name):
     return EventHandler
 
 
+class EmittedEvents(ServerSideEvents):
+    def go_subscribe(self):
+        def receiver(name, data):
+            self.send_event(data.json, data.name, data.id)
+
+        self.receiver = receiver
+        context = get_context()
+        context.channel.subscribe(self.receiver, 'emit')
+
+    def go_unsubscribe(self):
+        context = get_context()
+        context.channel.unsubscribe(self.receiver, 'emit')

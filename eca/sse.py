@@ -1,7 +1,7 @@
 from . import http
 import queue
 
-from collection import namedtuple
+from collections import namedtuple
 
 PendingEvent = namedtuple('PendingEvent', ['data', 'name', 'id'])
 
@@ -19,7 +19,7 @@ class ServerSideEvents(http.Handler):
         self.queue = queue.Queue()
 
     def send_event(self, data, name=None, id=None):
-        self.queue.put(PendingEvent(data, name id))
+        self.queue.put(PendingEvent(data, name, id))
 
     def go_subscribe(self):
         pass

@@ -3,6 +3,7 @@ import collections
 import threading
 import logging
 import sys
+import json
 
 from contextlib import contextmanager
 from . import util
@@ -17,7 +18,10 @@ __all__ = [
     'rules',
     'Context',
     'Event',
-    'new_event',
+    'fire_event',
+    'emit',
+    'get_context',
+    'context_activate',
     'context_switch'
 ]
 
@@ -142,7 +146,7 @@ def context_activate(context):
     Activate an eca Context. If None is passed, this function should
     disable the context.
     """
-     # stash old context
+    # stash old context
     old_context = getattr(thread_local, 'context', None)
 
     # switch to new context
@@ -151,16 +155,36 @@ def context_activate(context):
     return old_context
 
 
-def new_event(eventname, data=None):
+def get_context():
+    """Returns the current context."""
+    return getattr(thread_local, 'context', None)
+
+
+def fire_event(eventname, data=None):
     """
-    Emits a new event.
+    Fires an event.
 
     This function emits a new event to react on.
     """
     e = Event(eventname, data)
-    if getattr(thread_local, 'context', None) is None:
-        raise NotImplementedError("Can't invoke new_event without a current context.")
+    context = get_context()
+    if context is None:
+        raise NotImplementedError("Can't invoke fire_event without a current context.")
     thread_local.context.channel.publish('event', e)
+
+def emit(name, data, id=None):
+    """
+    Emits an event to whomever is listening (mostly HTTP clients).
+    """
+    e = Event(name, {
+        'json': json.dumps(data),
+        'id': id
+    })
+
+    context = get_context()
+    if context is None:
+        raise NotImplementedError("Can't invoke emit without a current context.")
+    thread_local.context.channel.publish('emit', e)
 
 
 def prepare_action(fn):

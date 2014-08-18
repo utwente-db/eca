@@ -24,3 +24,6 @@ def on_ping(context, event):
 @event('request')
 def on_request(contenxt, event):
     print("WOoot!" + str(event))
+    emit('test',{
+        'a':10
+    })
