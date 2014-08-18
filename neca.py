@@ -101,7 +101,6 @@ def main():
 
         with context_switch(context):
             logger.info("Starting module '{}'...".format(args.module))
-            new_event('init')
             new_event('main')
 
 if __name__ == "__main__":

@@ -61,14 +61,16 @@ class Context:
     context itself provides a run method to allow threaded execution through
     starting a new thread targetted at the run method.
     """
-    def __init__(self):
+    def __init__(self, name='<unnamed context>'):
         self.event_queue = queue.Queue()
         self.scope = util.NamespaceDict()
         self.channel = pubsub.PubSubChannel()
+        self.name = name
         self.done = False
 
         # subscribe to own pubsub channel to receive events
         self.channel.subscribe(lambda e,d: self.receive_event(d), 'event')
+        self.receive_event(Event('init'))
 
     def _trace(self, message):
         """Prints tracing statements if trace is enabled."""
@@ -114,23 +116,34 @@ class Context:
 @contextmanager
 def context_switch(context):
     """
-    Context manager to allow ad-hoc context switches.
+    Context manager to allow ad-hoc context switches. (The Python 'context' is
+    different from the eca Context.)
 
     This function can be written without any regard for locking as the
     thread_local object will take care of that. Since everything here is done
     in the same thread, this effectively allows nesting of context switches.
     """
-    # stash old context
+    # activate new context and store old
+    old_context = context_activate(context)
+
+    yield
+
+    # restore old context
+    context_activate(old_context)
+
+
+def context_activate(context):
+    """
+    Activate an eca Context. If None is passed, this function should
+    disable the context.
+    """
+     # stash old context
     old_context = getattr(thread_local, 'context', None)
 
     # switch to new context
     thread_local.context = context
 
-    # yield control to block inside 'with'
-    yield
-
-    # restore old context
-    thread_local.context = old_context
+    return old_context
 
 
 def new_event(eventname, data=None):

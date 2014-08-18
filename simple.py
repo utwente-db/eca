@@ -5,6 +5,7 @@ from eca import *
 @event('init')
 def init(context, event):
     context.silent = False
+    print("INIT")
 
 
 @event('main')
