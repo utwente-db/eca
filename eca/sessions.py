@@ -1,11 +1,12 @@
 from http.cookies import SimpleCookie
-from collections import namedtuple
+from collections import namedtuple, Mapping
 from itertools import product, chain
 import time
 import random
+import json
 
-from .http import Filter
-from . import Context, context_activate
+from .http import Filter, Handler
+from . import Context, context_activate, new_event
 
 
 # Name generation for contexts and sessions
@@ -63,9 +64,9 @@ class SessionCookie(Filter):
         handle activation.
         """
         cookies = self.request.cookies
-        value = cookies.get(self.manager.cookie)
+        morsel = cookies.get(self.manager.cookie)
 
-        if not value:
+        if not morsel:
             # Determine new cookie
             value = self.manager.generate_name()
 
@@ -75,6 +76,8 @@ class SessionCookie(Filter):
 
             # Send the new cookie as header
             self.request.send_header('Set-Cookie', cookies[self.manager.cookie].output(header=''))
+        else:
+            value = morsel.value
 
         self.manager.activate(value)
 
@@ -113,8 +116,56 @@ class SessionManager:
             result = next(names)
         return result
 
+    def _new_session(self, name):
+        result = Session(Context(name), time.time())
+        result.context.start()
+        return result
+
     def activate(self, name):
         if name not in self.sessions:
-            self.sessions[name] = Session(eca.Context(name), 0)
+            self.sessions[name] = self._new_session(name)
         self.sessions[name].activate()
+
+
+def GenerateEvent(name):
+    """
+    This function returns a handler class that creates the named event based
+    on the posted JSON data.
+    """
+    class EventHandler(Handler):
+        def handle_POST(self):
+            # handle weirdness
+            if 'content-length' not in self.request.headers:
+                self.request.send_error(411)
+                return
+
+            # read content-length header
+            length = int(self.request.headers['content-length'])
+
+            # grab data
+            data = self.request.rfile.read(length)
+            try:
+                structured = json.loads(data.decode('utf-8'))
+            except ValueError as e:
+                self.request.send_error(400, "Bad request: "+str(e))
+                return
+
+            if not isinstance(structured, Mapping):
+                self.request.send_error(400, "Bad request: expect a JSON object")
+                return
+
+            try:
+                new_event(name, structured)
+            except NotImplementedError:
+                # FIXME: logging here with hint about needing a SessionManager
+                self.request.send_error(500, "No current context available.")
+                return
+
+            self.request.send_response(202)
+            self.request.send_header('content-type', 'text/plain; charset=utf-8')
+            self.request.send_header('content-length', 0)
+            self.request.end_headers()
+
+    return EventHandler
+
 

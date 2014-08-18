@@ -88,6 +88,11 @@ class Context:
             while not self.done:
                 self._handle_event()
 
+    def start(self):
+        thread = threading.Thread(target=self.run)
+        thread.daemon = True
+        thread.start()
+
     def _handle_event(self):
         """Handles a single event, or times out after receiving nothing."""
         try:

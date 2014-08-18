@@ -19,3 +19,8 @@ def fizz_bang(context, event):
 @event('ping')
 def on_ping(context, event):
     print("Ping with " + str(event.a))
+
+
+@event('request')
+def on_request(contenxt, event):
+    print("WOoot!" + str(event))
