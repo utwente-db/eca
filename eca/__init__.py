@@ -92,9 +92,9 @@ class Context:
             while not self.done:
                 self._handle_event()
 
-    def start(self):
+    def start(self, daemon=True):
         thread = threading.Thread(target=self.run)
-        thread.daemon = True
+        thread.daemon = daemon
         thread.start()
 
     def _handle_event(self):
