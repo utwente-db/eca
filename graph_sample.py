@@ -15,7 +15,7 @@ def clip(lower, value, upper):
 @event('sample')
 def generate_sample(ctx, e):
     # base sample on previous one
-    sample = clip(e.previous + random.uniform(+5.0, -5.0))
+    sample = clip(-100, e.previous + random.uniform(+5.0, -5.0), 100)
 
     # emit to outside world
     emit('sample',{
