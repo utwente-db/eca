@@ -170,7 +170,7 @@ def fire_event(eventname, data=None):
     context = get_context()
     if context is None:
         raise NotImplementedError("Can't invoke fire_event without a current context.")
-    thread_local.context.channel.publish('event', e)
+    context.channel.publish('event', e)
 
 def emit(name, data, id=None):
     """
@@ -184,7 +184,7 @@ def emit(name, data, id=None):
     context = get_context()
     if context is None:
         raise NotImplementedError("Can't invoke emit without a current context.")
-    thread_local.context.channel.publish('emit', e)
+    context.channel.publish('emit', e)
 
 
 def prepare_action(fn):

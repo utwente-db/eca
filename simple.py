@@ -1,13 +1,17 @@
 from eca import *
 import eca.http
 
-#static_content_path = 'static'
+# configuration
+
+static_content_path = 'static'
 
 def add_request_handlers(httpd):
     httpd.add_route('/wiki', eca.http.Redirect('http://www.wikipedia.net'))
     httpd.add_route('/redir', eca.http.Redirect('/test/'))
     httpd.add_route('/test', eca.http.GenerateEvent('request'), methods=['POST'])
 
+
+#rules 
 
 @event('init')
 def init(context, event):
@@ -29,7 +33,7 @@ def on_ping(context, event):
 
 
 @event('request')
-def on_request(contenxt, event):
+def on_request(context, event):
     print("WOoot!" + str(event))
     emit('test',{
         'a':10
