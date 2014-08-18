@@ -22,18 +22,19 @@ def log_level(level):
     """argparse type to allow log level to be set directly."""
     numeric_level = getattr(logging, level.upper(), None)
     if not isinstance(numeric_level, int):
-        raise argparse.ArgumentTypeError("'{}' is not a valid logging level. Choose from {}".format(level, _hr_items(log_level.allowed)))
+        message_template = "'{}' is not a valid logging level. Choose from {}"
+        message = message_template.format(level, _hr_items(log_level.allowed))
+        raise argparse.ArgumentTypeError(message)
     return numeric_level
 
+
 # the following are allowed names for log levels
-log_level.allowed = ['debug', 'info', 'warning','error','critical']
+log_level.allowed = ['debug', 'info', 'warning', 'error', 'critical']
 
 
 def main_server(args, rules_module):
-    """
-    HTTP server entry point.
-    """
-    # determine initial static content path 
+    """HTTP server entry point."""
+    # determine initial static content path
     rules_path = os.path.dirname(os.path.abspath(rules_module.__file__))
     static_path = os.path.join(rules_path, 'static')
 
@@ -57,9 +58,10 @@ def main_server(args, rules_module):
     # invoke module specific configuration
     if hasattr(rules_module, 'add_request_handlers'):
         rules_module.add_request_handlers(httpd)
-    
+
     # start serving
     httpd.serve_forever()
+
 
 def main_engine(args, rules_module):
     """
@@ -93,7 +95,7 @@ def main():
                         help="The log level to use. One of {} (defaults to '%(default)s')".format(_hr_items(log_level.allowed)),
                         metavar='LEVEL',
                         type=log_level)
-    parser.add_argument('-s','--server',
+    parser.add_argument('-s', '--server',
                         dest='entry_point',
                         action='store_const',
                         const=main_server,
