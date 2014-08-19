@@ -12,4 +12,4 @@
 [ ] Add sample component of a graph/twitter list
 [ ] Come up with better name than 'ECA' to be more catchy
 [ ] Harden system against programmer error (i.e. sanity check all rules-module data flow)
-[ ] Add a delayed event scheduler (for 'fire in 2 seconds' things)
+[x] Add a delayed event scheduler (for 'fire in 2 seconds' things)

@@ -1,6 +1,5 @@
 from eca import *
 
-import time
 import random
 
 root_content_path = 'graph-sample'
@@ -18,14 +17,7 @@ def generate_sample(ctx, e):
     sample = clip(-100, e.previous + random.uniform(+5.0, -5.0), 100)
 
     # emit to outside world
-    emit('sample',{
-        'value': sample
-    })
-
-    # this will halt the execution of other rules in this context
-    time.sleep(0.05)
+    emit('sample',{'value': sample})
 
     # chain event
-    fire('sample',{
-        'previous': sample
-    })
+    fire('sample', {'previous': sample}, delay=0.05)

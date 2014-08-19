@@ -160,7 +160,7 @@ def get_context():
     return getattr(thread_local, 'context', None)
 
 
-def fire(eventname, data=None):
+def fire(eventname, data=None, delay=None):
     """
     Fires an event.
 
@@ -170,7 +170,7 @@ def fire(eventname, data=None):
     context = get_context()
     if context is None:
         raise NotImplementedError("Can't invoke fire without a current context.")
-    context.channel.publish('event', e)
+    context.channel.publish('event', e, delay)
 
 def emit(name, data, id=None):
     """
