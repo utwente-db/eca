@@ -15,7 +15,15 @@
         }
     };
 
-    ConstructionState.prototype.actions = function(actions, def) {
+    ConstructionState.prototype.actions = function(actions_or_def, def) {
+        // handle function overloading
+        if(typeof actions_or_def == 'function') {
+            def = actions_or_def;
+            actions = {};
+        } else {
+            actions = actions_or_def;
+        }
+
         // default actionless handler
         if(typeof def == 'undefined') {
             def = function(e, message) {
