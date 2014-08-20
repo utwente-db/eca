@@ -2,15 +2,20 @@
 <html>
 <head>
 <title>Neca Test</title>
+<link rel="stylesheet" href="/style/style.css"/>
 <script src="/lib/jquery-2.1.1.min.js"></script>
 <script src="/lib/jquery.flot.min.js"></script>
 <script src="/lib/events.js"></script>
 <script src="/lib/blocks.js"></script>
 <script src="/lib/charts.js"></script>
+<script src="/lib/log.js"></script>
 </head>
-<body>
+<body class="container_12">
 <h1>Graph sample</h1>
-<div id="graph" style="width: 480px; height: 320px;"></div>
+
+<div id="graph" class="grid_6 vert_4 debug_green"></div>
+<div id="log" class="grid_6 vert_3 debug_blue"></div>
+<div class="grid_6 vert_1 debug_red"><p>Static content goes here. Lalala.</p></div>
 
 <script>
 block('#graph').rolling_chart({
@@ -25,8 +30,10 @@ block('#graph').rolling_chart({
         }
     }
 });
-
 events.connect('sample', '#graph');
+
+var log = block('#log').log();
+events.connect('debug', log);
 </script>
 </body>
 </html>

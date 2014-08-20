@@ -6,6 +6,7 @@ root_content_path = 'graph-sample'
 
 @event('init')
 def setup(ctx, e):
+    ctx.count = 0
     fire('sample', {'previous': 0.0})
 
 def clip(lower, value, upper):
@@ -13,6 +14,10 @@ def clip(lower, value, upper):
 
 @event('sample')
 def generate_sample(ctx, e):
+    ctx.count += 1
+    if ctx.count % 50 == 0:
+        emit('debug', {'text': 'Log message #'+str(ctx.count)+'!'})
+
     # base sample on previous one
     sample = clip(-100, e.previous + random.uniform(+5.0, -5.0), 100)
 
@@ -24,3 +29,4 @@ def generate_sample(ctx, e):
 
     # chain event
     fire('sample', {'previous': sample}, delay=0.05)
+
