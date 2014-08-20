@@ -17,7 +17,10 @@ def generate_sample(ctx, e):
     sample = clip(-100, e.previous + random.uniform(+5.0, -5.0), 100)
 
     # emit to outside world
-    emit('sample',{'value': sample})
+    emit('sample',{
+        'action': 'add',
+        'value': sample
+    })
 
     # chain event
     fire('sample', {'previous': sample}, delay=0.05)

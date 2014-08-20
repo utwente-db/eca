@@ -2,50 +2,20 @@
 <html>
 <head>
 <title>Neca Test</title>
-<script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
-<script src="jquery.flot.min.js"></script>
+<script src="/lib/jquery-2.1.1.min.js"></script>
+<script src="/lib/jquery.flot.min.js"></script>
+<script src="/lib/events.js"></script>
+<script src="/lib/blocks.js"></script>
+<script src="/lib/charts.js"></script>
 </head>
 <body>
 <h1>Graph sample</h1>
 <div id="graph" style="width: 480px; height: 320px;"></div>
 
 <script>
-/* See https://developer.mozilla.org/en-US/docs/Web/API/EventSource */
-
-/* This should go into a separate file */
-event_stream = {};
-
-(function(exports) {
-    var e = new EventSource('/events');
-
-    exports.listen = function(name, callback) {
-        e.addEventListener(name, function(d) {
-            var data = JSON.parse(d.data);
-            callback(data);
-        });
-    }
-})(event_stream);
-
-$(function() {
-    var data = [];
-    var totalPoints = 100;
-
-    function getDataPoints() {
-        var res = [];
-
-        // Zip the y values with the x values
-        for (var i = 0; i < data.length; ++i) {
-            res.push([i, data[i]])
-        }
-
-        // we only return this one series
-        return [res];
-    }
-
-    var plot = $.plot("#graph", getDataPoints(), {
-        series: {
-            shadowSize: 0   // Drawing is faster without shadows
-        },
+block('#graph').rolling_chart({
+    memory: 150,
+    chart: {
         yaxis:{
             min: -100,
             max: 100
@@ -53,24 +23,10 @@ $(function() {
         xaxis: {
             show: false
         }
-    });
-
-    event_stream.listen('sample', function(d) {
-        // remove first point if necessary
-        if (data.length > totalPoints) {
-            data = data.slice(1);
-        }
-
-        // add new point
-        data.push(d.value);
-
-        // update the graph
-        plot.setData(getDataPoints());
-        plot.setupGrid();
-        plot.draw();
-   });
+    }
 });
 
+events.connect('sample', '#graph');
 </script>
 </body>
 </html>
