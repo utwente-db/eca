@@ -44,7 +44,7 @@
 
     block = function(elements) {
         // allow passing of selectors, jquery objects and DOM nodes
-        $element = $(elements);
+        var $element = $(elements);
 
         // actual work
         if($element.length != 1) {
