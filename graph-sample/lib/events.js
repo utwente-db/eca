@@ -12,7 +12,7 @@ events = {};
 
     exports.connect = function(name, elements) {
         // wrap to allow selector, jQuery object and DOM nodes
-        $elements = $(elements);
+        var $elements = $(elements);
 
         // add event listener to event stream
         e.addEventListener(name, function(m) {
