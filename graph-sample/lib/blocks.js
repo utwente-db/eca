@@ -26,7 +26,7 @@
 
         // dispatch all incoming server events
         this.$element.on('server-event', function(e, message) {
-            if(!'action' in message) {
+            if(!('action' in message)) {
                 $(this).trigger('_default.server-event', [message]);
             } else {
                 $(this).trigger(message.action+'.server-event', [message]);
