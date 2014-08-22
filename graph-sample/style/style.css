@@ -8,18 +8,18 @@
 
 /* Vertical classes */
 
-.vert_1,
-.vert_2,
-.vert_3,
-.vert_4,
-.vert_5,
-.vert_6,
-.vert_7,
-.vert_8,
-.vert_9,
-.vert_10,
-.vert_11,
-.vert_12 {
+.grid_1, .vert_1,
+.grid_2, .vert_2,
+.grid_3, .vert_3,
+.grid_4, .vert_4,
+.grid_5, .vert_5,
+.grid_6, .vert_6,
+.grid_7, .vert_7,
+.grid_8, .vert_8,
+.grid_9, .vert_9,
+.grid_10, .vert_10,
+.grid_11, .vert_11,
+.grid_12, .vert_12 {
     margin-top: 10px;
     margin-bottom: 10px;
 }
