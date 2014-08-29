@@ -13,3 +13,4 @@
 [ ] Come up with better name than 'ECA' to be more catchy
 [ ] Harden system against programmer error (i.e. sanity check all rules-module data flow)
 [x] Add a delayed event scheduler (for 'fire in 2 seconds' things)
+[ ] locatie tweets http://library.ewi.utwente.nl/ecadata/batatweets.txt
