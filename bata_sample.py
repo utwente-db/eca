@@ -49,18 +49,18 @@ def json2objects(data):
 # Define a function for the thread
 def generate_batatweets(ctx):
     print(str(ctx))
-    # fire('batatweet', {'previous': 0.0})
-    ctx.channel.publish('batatweet', {'previous': 0.0}, None)
-    link = "http://library.ewi.utwente.nl/ecadata/batatweets.txt"
-    req = urllib.request.Request(link)
-    response = urllib.request.urlopen(req)
-    page_str = response.read().decode("utf-8")
-    for line in page_str.split("\n"):
-        jo = json2objects(line)
-        try:
-            # print(jo['text'])
-            a = 1
-        except:
-            print("IGNORE:"+line)
+    with context_switch(ctx):
+        fire('batatweet', {'previous': 0.0})
+        link = "http://library.ewi.utwente.nl/ecadata/batatweets.txt"
+        req = urllib.request.Request(link)
+        response = urllib.request.urlopen(req)
+        page_str = response.read().decode("utf-8")
+        for line in page_str.split("\n"):
+            jo = json2objects(line)
+            try:
+                # print(jo['text'])
+                a = 1
+            except:
+                print("IGNORE:"+line)
 
 
