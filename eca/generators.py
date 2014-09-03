@@ -4,6 +4,7 @@ from datetime import datetime
 import json
 from . import fire, get_context, context_switch, register_auxiliary, auxiliary
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +23,13 @@ class OfflineTweetGenerator:
 
     def run(self):
         logger.debug("Running tweet event generator")
-        with context_switch(self.context), open(self.data_file) as data:
-            for event in self.generate_events(data):
-                fire(self.event_name, event)
+        try:
+            with context_switch(self.context), open(self.data_file) as data:
+                for event in self.generate_events(data):
+                    fire(self.event_name, event)
+        except IOError as e:
+            print(e, file=sys.stderr)
+            logger.error("Is the tweet data downloaded?")
 
        
     def generate_events(self, data):
