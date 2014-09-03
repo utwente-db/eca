@@ -22,7 +22,9 @@ __all__ = [
     'emit',
     'get_context',
     'context_activate',
-    'context_switch'
+    'context_switch',
+    'auxiliary',
+    'register_auxiliary'
 ]
 
 # The 'global' rules set
@@ -64,11 +66,15 @@ class Context:
     Each context maintains both a variables namespace and an event queue. The
     context itself provides a run method to allow threaded execution through
     starting a new thread targetted at the run method.
+
+    Every context also contains a dictionary of auxiliaries which contains
+    objects to support the context and its rule execution.
     """
     def __init__(self, name='<unnamed context>'):
         self.event_queue = queue.Queue()
         self.scope = util.NamespaceDict()
         self.channel = pubsub.PubSubChannel()
+        self.auxiliaries = {}
         self.name = name
         self.done = False
 
@@ -84,6 +90,9 @@ class Context:
         """Receives an Event to handle."""
         self._trace("Received event: {}".format(event))
         self.event_queue.put(event)
+
+    def auxiliary(self, name):
+        return self.auxiliaries[name]
 
     def run(self):
         """Main event loop."""
@@ -159,6 +168,24 @@ def get_context():
     """Returns the current context."""
     return getattr(thread_local, 'context', None)
 
+
+def auxiliary(name):
+    """
+    Returns an auxiliary for this context.
+    """
+    context = get_context()
+    if context is None:
+        raise NotImplementedError("Can not get an auxiliary without a current context.")
+    return context.auxiliaries[name]
+
+def register_auxiliary(name, aux):
+    """
+    Registers an auxiliary object for this context.
+    """
+    context = get_context()
+    if context is None:
+        raise NotImplementedError("Can not get an auxiliary without a current context.")
+    context.auxiliaries[name] = aux
 
 def fire(eventname, data=None, delay=None):
     """
