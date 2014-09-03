@@ -3,6 +3,7 @@ import argparse
 import threading
 import importlib
 import os.path
+import sys
 import logging
 
 from eca import *
@@ -72,7 +73,7 @@ def main_engine(args, rules_module):
     context.start(daemon=False)
 
     with context_switch(context):
-        logger.info("Starting module '{}'...".format(args.module))
+        logger.info("Starting module '{}'...".format(args.file))
         fire('main')
 
 
@@ -82,9 +83,9 @@ def main():
     """
     parser = argparse.ArgumentParser(description='The Neca HTTP server.')
     parser.set_defaults(entry_point=main_engine)
-    parser.add_argument('module',
-                        default='simple',
-                        help="The rules module to load (defaults to %(default)s).",
+    parser.add_argument('file',
+                        default='simple.py',
+                        help="The rules file to load (defaults to %(default)s).",
                         nargs='?')
     parser.add_argument('-t', '--trace',
                         default=False,
@@ -116,9 +117,17 @@ def main():
     if args.trace:
         logging.getLogger('trace').setLevel(logging.DEBUG)
 
-    # load module, and determine static content path
-    rules_module = importlib.import_module(args.module)
-
+    # load module
+    rules_dir, rules_file = os.path.split(args.file)
+    rules_name = os.path.splitext(rules_file)[0]
+    
+    old_path = list(sys.path)
+    sys.path.insert(0, rules_dir)
+    try:
+        rules_module = importlib.import_module(rules_name)
+    finally:
+        sys.path[:] = old_path
+    
     args.entry_point(args, rules_module)
 
 if __name__ == "__main__":
