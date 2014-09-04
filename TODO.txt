@@ -4,20 +4,18 @@
 [x] Add SSE handler to allow event-based pushes
 [x] Add pubsub for SSE handlers to allow emitting from within ECA context
 [x] Rework static file handling to not be the exception to normal operations
-[ ] maybe create @condition that sees 1/2 params?
-[ ] Add basic Javascript handling of events
+[x] Add basic Javascript handling of events
 [x] Add a way to configure twitter (event generation) input thread
 [ ] Add control to event generation thread through HTTP interface
 [x] Document all core modules
 [ ] Add sample component of a graph/twitter list
-[ ] Come up with better name than 'ECA' to be more catchy
 [ ] Harden system against programmer error (i.e. sanity check all rules-module data flow)
 [x] Add a delayed event scheduler (for 'fire in 2 seconds' things)
-[ ] locatie tweets http://library.ewi.utwente.nl/ecadata/batatweets.txt
+[x] locatie tweets http://library.ewi.utwente.nl/ecadata/batatweets.txt
 [ ] Clean up samples and rename leading sample to template.py + template dir
 [ ] Button Block
 [ ] Session block
-[ ] Full speed tweet time_factor
+[x] Full speed tweet time_factor
 [ ] Docs in graph.js
 [ ] emit() in non-server context should doe something useful
 [ ] Rework rules set to non-global object
