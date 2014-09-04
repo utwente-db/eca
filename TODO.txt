@@ -17,5 +17,5 @@
 [ ] Session block
 [x] Full speed tweet time_factor
 [ ] Docs in graph.js
-[ ] emit() in non-server context should doe something useful
+[x] emit() in non-server context should doe something useful
 [ ] Rework rules set to non-global object
