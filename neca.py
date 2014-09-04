@@ -5,6 +5,7 @@ import importlib
 import os.path
 import sys
 import logging
+import json
 
 from eca import *
 import eca.httpd
@@ -74,9 +75,19 @@ def main_engine(args, rules_module):
     context = Context()
     context.start(daemon=False)
 
+    # attach printing emit listener to context    
+    def emitter(name, event):
+        print("emit '{}': {}".format(event.name, json.loads(event.json)))
+    context.channel.subscribe(emitter, 'emit')
+
+    # fire main event
     with context_switch(context):
         logger.info("Starting module '{}'...".format(args.file))
         fire('main')
+        # then read each line and process
+        for line in sys.stdin:
+            fire('line', line)
+        fire('end-of-input')
 
 
 def main():

@@ -24,7 +24,8 @@ __all__ = [
     'context_activate',
     'context_switch',
     'auxiliary',
-    'register_auxiliary'
+    'register_auxiliary',
+    'shutdown'
 ]
 
 # The 'global' rules set
@@ -45,17 +46,18 @@ class Event:
 
         """
         self.name = name
-        self.data = data or {}
-
-        assert isinstance(self.data, collections.Mapping)
+        self.data = data
 
     def __getattr__(self, name):
         return self.data[name]
 
     def __str__(self):
         data_strings = []
-        for k, v in self.data.items():
-            data_strings.append("{}={}".format(k, v))
+        if isinstance(self.data, collections.Mapping):
+            for k, v in self.data.items():
+                data_strings.append("{}={}".format(k, v))
+        else:
+            data_strings.append(str(self.data))
         return "'{}' with {{{}}}".format(self.name, ', '.join(data_strings))
 
 
@@ -77,6 +79,7 @@ class Context:
         self.auxiliaries = {}
         self.name = name
         self.done = False
+        self.daemon = True
 
         # subscribe to own pubsub channel to receive events
         self.channel.subscribe(lambda e,d: self.receive_event(d), 'event')
@@ -103,8 +106,15 @@ class Context:
 
     def start(self, daemon=True):
         thread = threading.Thread(target=self.run)
-        thread.daemon = daemon
+        self.daemon = daemon
+        thread.daemon = self.daemon
         thread.start()
+
+    def stop(self):
+        if not self.daemon:
+            self.done = True
+        else:
+            logger.warning("Can't shutdown daemon context. The context is used in a server.")
 
     def _handle_event(self):
         """Handles a single event, or times out after receiving nothing."""
@@ -178,6 +188,7 @@ def auxiliary(name):
         raise NotImplementedError("Can not get an auxiliary without a current context.")
     return context.auxiliaries[name]
 
+
 def register_auxiliary(name, aux):
     """
     Registers an auxiliary object for this context.
@@ -186,6 +197,13 @@ def register_auxiliary(name, aux):
     if context is None:
         raise NotImplementedError("Can not get an auxiliary without a current context.")
     context.auxiliaries[name] = aux
+
+
+def shutdown():
+    context = get_context()
+    if context is None:
+        raise NotImplementedError("Can not invoke shutdown without a current context.")
+    context.stop()
 
 def fire(eventname, data=None, delay=None):
     """
@@ -198,6 +216,7 @@ def fire(eventname, data=None, delay=None):
     if context is None:
         raise NotImplementedError("Can't invoke fire without a current context.")
     context.channel.publish('event', e, delay)
+
 
 def emit(name, data, id=None):
     """
