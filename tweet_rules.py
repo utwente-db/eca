@@ -7,7 +7,7 @@ import textwrap
 @event('init')
 def setup(ctx, e):
     # start the offline tweet stream
-    start_offline_tweets('batatweets.txt', time_factor=10000, event_name='chirp')
+    start_offline_tweets('data/batatweets.txt', time_factor=10000, event_name='chirp')
 
 @event('chirp')
 def tweet(ctx, e):
