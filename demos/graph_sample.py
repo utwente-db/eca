@@ -2,8 +2,6 @@ from eca import *
 
 import random
 
-root_content_path = 'graph-sample'
-
 @event('init')
 def setup(ctx, e):
     ctx.count = 0

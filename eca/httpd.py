@@ -261,6 +261,7 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
         if not path.endswith('/'):
             logger.warn("Static content configured without trailing '/'. "+
                         "This is different from traditional behaviour.")
+        logger.info("Serving static content for {} under '{}' from '{}'".format(methods,path,local_path))
         self.add_route(path, StaticContent(path, local_path), methods)
 
     def add_filter(self, path, filter_factory, methods=[]):

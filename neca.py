@@ -37,7 +37,9 @@ def main_server(args, rules_module):
     """HTTP server entry point."""
     # determine initial static content path
     rules_path = os.path.dirname(os.path.abspath(rules_module.__file__))
-    static_path = os.path.join(rules_path, 'static')
+    rules_file = os.path.basename(os.path.abspath(rules_module.__file__))
+    rules_file, rules_ext = os.path.splitext(rules_file)
+    root_path = os.path.join(rules_path, "{}_static".format(rules_file))
 
     # see if an override has been given (absolute or relative)
     if hasattr(rules_module, 'root_content_path'):
