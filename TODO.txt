@@ -12,7 +12,7 @@
 [ ] Harden system against programmer error (i.e. sanity check all rules-module data flow)
 [x] Add a delayed event scheduler (for 'fire in 2 seconds' things)
 [x] locatie tweets http://library.ewi.utwente.nl/ecadata/batatweets.txt
-[ ] Clean up samples and rename leading sample to template.py + template dir
+[x] Clean up samples and rename leading sample to template.py + template dir
 [ ] Button Block
 [ ] Session block
 [x] Full speed tweet time_factor
