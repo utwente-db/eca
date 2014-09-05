@@ -10,6 +10,11 @@ def add_request_handlers(httpd):
     # understands POST requests.
     httpd.add_route('/api/order', eca.http.GenerateEvent('order'), methods=['POST'])
 
+    # use the library content from the template_static dir instead of our own
+    # this is a bit finicky, since execution now depends on a proper working directory.
+    httpd.add_content('/lib/', 'template_static/lib')
+    httpd.add_content('/style/', 'template_static/style')
+
 
 @event('order')
 def order(c, e):
