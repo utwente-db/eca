@@ -1,7 +1,8 @@
 (function($, block) {
 block.fn.form = function(config) {
     var options = $.extend({
-        target: null
+        target: null,
+        callback: function() {}
     }, config);
 
     // check for sane config
@@ -50,7 +51,7 @@ block.fn.form = function(config) {
         $.ajax(options.target,{
             method: 'POST',
             data: JSON.stringify(payload)
-        });
+        }).then(options.callback);
     });
 
     return this.$element;
