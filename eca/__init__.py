@@ -29,9 +29,6 @@ __all__ = [
     'shutdown'
 ]
 
-# The 'global' rules set
-rules = set()
-
 # The global event channel
 global_channel = pubsub.PubSubChannel()
 
@@ -40,6 +37,71 @@ global_channel = pubsub.PubSubChannel()
 # (See https://docs.python.org/3/library/threading.html#thread-local-data)
 thread_local = threading.local()
 
+
+class Rules:
+    def __init__(self):
+        self.rules = set()
+
+    def prepare_action(self, fn):
+        """
+        Prepares a function to be usable as an action.
+    
+        This function assigns an empty list of the 'conditions' attribute if it is
+        not yet available. This function also registers the action with the action
+        library.
+        """
+        if not hasattr(fn, 'conditions'):
+            logger.info("Defined action '{}'".format(fn.__name__))
+        fn.conditions = getattr(fn, 'conditions', [])
+        fn.events = getattr(fn, 'events', set())
+        self.rules.add(fn)
+    
+    
+    def condition(self, c):
+        """
+        Adds a condition callable to the action.
+    
+        The condition must be callable. The condition will receive a context and
+        an event, and must return True or False.
+    
+        This function returns a decorator so we can pass an argument to the
+        decorator itself. This is why we define a new function and return it
+        without calling it.
+    
+        (See http://docs.python.org/3/glossary.html#term-decorator)
+    
+        """
+        def condition_decorator(fn):
+            self.prepare_action(fn)
+            logger.debug("With condition: {}".format(util.describe_function(c)))
+            fn.conditions.append(c)
+            return fn
+        return condition_decorator
+    
+    
+    def event(self, eventname):
+        """
+        Attaches the action to an event.
+    
+        This is effectively the same as adding the 'event.name == eventname'
+        condition. Adding multiple event names will prevent the rule from
+        triggering.
+    
+        As condition, this function generates a decorator.
+        """
+        def event_decorator(fn):
+            self.prepare_action(fn)
+            logger.debug("Attached to event: {}".format(eventname))
+            fn.events.add(eventname)
+            return fn
+        return event_decorator
+
+
+# The 'global' rules set
+rules = Rules()
+
+event = rules.event
+condition = rules.condition
 
 class Event:
     """Abstract event with a name and attributes."""
@@ -76,7 +138,7 @@ class Context:
     Every context also contains a dictionary of auxiliaries which contains
     objects to support the context and its rule execution.
     """
-    def __init__(self, init_data=None, name='<unnamed context>'):
+    def __init__(self, init_data=None, name='<unnamed context>', rules=rules):
         self.event_queue = queue.Queue()
         self.scope = util.NamespaceDict()
         self.channel = pubsub.PubSubChannel()
@@ -84,6 +146,7 @@ class Context:
         self.name = name
         self.done = False
         self.daemon = True
+        self.rules = rules
 
         # subscribe to own pubsub channel to receive events
         self.channel.subscribe(self._pubsub_receiver, 'event')
@@ -140,7 +203,7 @@ class Context:
 
             # Determine candidate rules and execute matches:
             # 1) Only rules that match the event name as one of the events
-            candidates = [r for r in rules if event.name in r.events]
+            candidates = [r for r in self.rules.rules if event.name in r.events]
 
             # 2) Only rules for which all conditions hold
             for r in candidates:
@@ -253,56 +316,4 @@ def emit(name, data, id=None):
     context.channel.publish('emit', e)
 
 
-def prepare_action(fn):
-    """
-    Prepares a function to be usable as an action.
 
-    This function assigns an empty list of the 'conditions' attribute if it is
-    not yet available. This function also registers the action with the action
-    library.
-    """
-    if not hasattr(fn, 'conditions'):
-        logger.info("Defined action '{}'".format(fn.__name__))
-    fn.conditions = getattr(fn, 'conditions', [])
-    fn.events = getattr(fn, 'events', set())
-    rules.add(fn)
-
-
-def condition(c):
-    """
-    Adds a condition callable to the action.
-
-    The condition must be callable. The condition will receive a context and
-    an event, and must return True or False.
-
-    This function returns a decorator so we can pass an argument to the
-    decorator itself. This is why we define a new function and return it
-    without calling it.
-
-    (See http://docs.python.org/3/glossary.html#term-decorator)
-
-    """
-    def condition_decorator(fn):
-        prepare_action(fn)
-        logger.debug("With condition: {}".format(util.describe_function(c)))
-        fn.conditions.append(c)
-        return fn
-    return condition_decorator
-
-
-def event(eventname):
-    """
-    Attaches the action to an event.
-
-    This is effectively the same as adding the 'event.name == eventname'
-    condition. Adding multiple event names will prevent the rule from
-    triggering.
-
-    As condition, this function generates a decorator.
-    """
-    def event_decorator(fn):
-        prepare_action(fn)
-        logger.debug("Attached to event: {}".format(eventname))
-        fn.events.add(eventname)
-        return fn
-    return event_decorator
