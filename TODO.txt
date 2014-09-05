@@ -13,9 +13,9 @@
 [x] Add a delayed event scheduler (for 'fire in 2 seconds' things)
 [x] locatie tweets http://library.ewi.utwente.nl/ecadata/batatweets.txt
 [x] Clean up samples and rename leading sample to template.py + template dir
-[ ] Button Block
+[x] Button Block
 [ ] Session block
 [x] Full speed tweet time_factor
-[ ] Docs in graph.js
+[x] Docs in graph.js
 [x] emit() in non-server context should doe something useful
 [ ] Rework rules set to non-global object
