@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Neca Test</title>
+<link rel="stylesheet" href="/style/layout.css"/>
+<link rel="stylesheet" href="/style/theme.css"/>
+<script src="/lib/jquery-2.1.1.min.js"></script>
+<script src="/lib/jquery.flot.min.js"></script>
+<script src="/lib/core.js"></script>
+<script src="/lib/log.js"></script>
+<script src="/lib/form.js"></script>
+</head>
+<body class="container_12">
+<h1>Hot Drinks Dashboard</h1>
+
+<!-- Add an order log -->
+<div id='log' class="grid_6 vert_6"></div>
+
+<!-- Input form -->
+<div id='knopjes' class="grid_6 vert_4">
+    <h3>Your Order...</h3>
+
+    <div>
+        <select name='drink'>
+            <option>Coffee</option>
+            <option>Tea</option>
+        </select>
+
+        <label for='type_box'>Type</label> <input type='text' name='type' id='type_box'/>
+    </div>
+    
+    <div>
+        Extras:
+        <input type='checkbox' name='additives' value='sugar' id='sugar_box'/> <label for='sugar_box'>+Sugar</label>
+        <input type='checkbox' name='additives' value='milk' id='milk_box'/> <label for='milk_box'>+Milk</label>
+    </div>
+
+    <div>
+        <label for="notes_box">Notes:</label>
+        <textarea name='notes' id='notes_box' style="width:100%"></textarea>
+    </div>
+
+    <div>
+        <input type='radio' name='when' id='when_now' value='now'/><label for='when_now'>Now</label><br>
+        <input type='radio' name='when' id='when_later' value='later'/><label for='when_later'>Later</label>
+    </div>
+
+    <input type='submit' value='Place order'/>
+</div>
+
+<script>
+// connect order log to 'orders' emit
+block('#log').log();
+events.connect('orders', '#log');
+
+// target the form at the exposed API
+block('#knopjes').form({
+    target: '/api/order'
+});
+</script>
+</body>
+</html>
