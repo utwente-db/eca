@@ -19,6 +19,7 @@ __all__ = [
     'Context',
     'Event',
     'fire',
+    'fire_global',
     'emit',
     'get_context',
     'context_activate',
@@ -30,6 +31,9 @@ __all__ = [
 
 # The 'global' rules set
 rules = set()
+
+# The global event channel
+global_channel = pubsub.PubSubChannel()
 
 # The thread local storage used to create a 'current context' with regards
 # to the executing thread.
@@ -72,7 +76,7 @@ class Context:
     Every context also contains a dictionary of auxiliaries which contains
     objects to support the context and its rule execution.
     """
-    def __init__(self, name='<unnamed context>'):
+    def __init__(self, init_data=None, name='<unnamed context>'):
         self.event_queue = queue.Queue()
         self.scope = util.NamespaceDict()
         self.channel = pubsub.PubSubChannel()
@@ -82,12 +86,19 @@ class Context:
         self.daemon = True
 
         # subscribe to own pubsub channel to receive events
-        self.channel.subscribe(lambda e,d: self.receive_event(d), 'event')
-        self.receive_event(Event('init'))
+        self.channel.subscribe(self._pubsub_receiver, 'event')
+        self.receive_event(Event('init', init_data))
+
+        # subscribe to global pubsub channel to receive global eca events
+        global_channel.subscribe(self._pubsub_receiver, 'event')
 
     def _trace(self, message):
         """Prints tracing statements if trace is enabled."""
         logging.getLogger('trace').info(message)
+
+    def _pubsub_receiver(self, name, data):
+        """Pubsub channel connector."""
+        self.receive_event(data)
 
     def receive_event(self, event):
         """Receives an Event to handle."""
@@ -111,6 +122,7 @@ class Context:
         thread.start()
 
     def stop(self):
+        global_channel.unsubscribe(self._pubsub_receiver, 'event')
         if not self.daemon:
             self.done = True
         else:
@@ -216,6 +228,14 @@ def fire(eventname, data=None, delay=None):
     if context is None:
         raise NotImplementedError("Can't invoke fire without a current context.")
     context.channel.publish('event', e, delay)
+
+
+def fire_global(eventname, data=None, delay=None):
+    """
+    Fires a global event.
+    """
+    e = Event(eventname, data)
+    global_channel.publish('event', e, delay)
 
 
 def emit(name, data, id=None):

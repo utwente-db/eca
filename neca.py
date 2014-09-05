@@ -51,10 +51,13 @@ def main_server(args, rules_module):
 
     # configure http server
     httpd = eca.httpd.HTTPServer((args.ip, args.port))
+
     # default root route
     httpd.add_content('/', root_path)
+
     # default events route
     httpd.add_route('/events', eca.http.EventStream)
+
     # default handlers for cookies and sessions
     httpd.add_filter('/', eca.http.Cookies)
     httpd.add_filter('/', eca.http.SessionManager('eca-session'))
@@ -72,7 +75,7 @@ def main_engine(args, rules_module):
     Rules engine only entry point.
     """
     # create context
-    context = Context()
+    context = Context(init_data={'name': '__main__'})
     context.start(daemon=False)
 
     # attach printing emit listener to context    

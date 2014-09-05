@@ -116,7 +116,7 @@ class SessionManager:
         return result
 
     def _new_session(self, name):
-        result = Session(Context(name), time.time())
+        result = Session(Context(name=name, init_data={'name': name}), time.time())
         result.context.start()
         return result
 
