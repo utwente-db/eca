@@ -237,7 +237,7 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
                                         registration.handler,
                                         registration.methods,
                                         registration.path)
-        logger.debug(message)
+        logger.info(message)
 
     def add_route(self, path, handler_factory, methods=["GET"]):
         """
