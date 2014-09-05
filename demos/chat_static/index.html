@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Neca Test</title>
+<link rel="stylesheet" href="/style/layout.css"/>
+<link rel="stylesheet" href="/style/theme.css"/>
+<script src="/lib/jquery-2.1.1.min.js"></script>
+<script src="/lib/jquery.flot.min.js"></script>
+<script src="/lib/core.js"></script>
+<script src="/lib/form.js"></script>
+<script src="/lib/log.js"></script>
+</head>
+<body class="container_12">
+<h1>ECA Chat</h1>
+
+<div id='messages' class='grid_12 vert_4'></div>
+
+<div id='form' class='grid_8 vert_2'>
+<textarea name='text' style='width: 100%'></textarea>
+<input type='submit' value='Send message'/>
+</div>
+
+<script>
+block('#messages').log();
+events.connect('message', '#messages');
+
+block('#form').form({
+    target: '/api/message',
+    callback: function() {
+        $('textarea').val('');
+    }
+});
+
+// small usability tweak
+$('textarea').keydown(function(e) {
+    if((e.which == 10 || e.which == 13) && e.ctrlKey) {
+        $('#form input[type="submit"]').click();
+    }
+});
+</script>
+</body>
+</html>
