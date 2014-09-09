@@ -35,9 +35,11 @@ block.fn.form = function(config) {
                 case 'checkbox':
                     // build a map of checked values for this name
                     if(typeof payload[this.name] === 'undefined') {
-                        payload[this.name] = {};
+                        payload[this.name] = [];
                     }
-                    payload[this.name][this.value] = $(this).prop('checked');
+                    if($(this).prop('checked')) {
+                        payload[this.name].push(this.value);
+                    }
                     break;
 
                 // default to storing the value

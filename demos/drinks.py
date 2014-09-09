@@ -44,7 +44,7 @@ def start_brewing(c,e):
 # Check for a very specific order
 @event('order')
 @condition(lambda c,e: e.data['drink'] == 'Tea'
-                   and not any(e.data['additives'].values())
+                   and not e.data['additives']
                    and e.data['type'].lower() == 'earl grey'
                    and 'hot' in e.data['notes'].lower())
 def picard_has_arrived(c,e):
