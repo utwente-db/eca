@@ -16,12 +16,14 @@ __all__ = [
     'event',
     'condition',
     'rules',
+    'Rules',
     'Context',
     'Event',
     'fire',
     'fire_global',
     'emit',
     'get_context',
+    'spawn_context',
     'context_activate',
     'context_switch',
     'auxiliary',
@@ -316,4 +318,9 @@ def emit(name, data, id=None):
     context.channel.publish('emit', e)
 
 
-
+def spawn_context(init_data=None, name='<unnamed context>', rules=rules, daemon=False):
+    """
+    Spawns a new context and starts it.
+    """
+    context = Context(init_data, name, rules)
+    context.start(daemon)
