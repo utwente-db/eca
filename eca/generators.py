@@ -90,6 +90,7 @@ def offline_tweets(stop, data_file, time_factor=1000):
             # delay and yield or break depending on success
             if delayed(delay):
                 yield tweet
+                last_time = tweet_time
             else:
                 break
 
