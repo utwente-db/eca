@@ -5,6 +5,14 @@ block.fn.form = function(config) {
         callback: function() {}
     }, config);
 
+    // see if we can grab the action from the form tag
+    if(options.target === null) {
+        var action = this.$element.find("form").attr('action');
+        if(typeof action !== 'undefined') {
+            options.target = action;
+        }
+    }
+
     // check for sane config
     if(options.target === null) {
         console.log("The 'form' block requires a target option to know where to send the request.");
@@ -13,7 +21,7 @@ block.fn.form = function(config) {
 
     // set up submit handler
     var $block = this.$element;
-    $block.find("input[type='submit']").click(function() {
+    $block.find("form").submit(function(event) {
         var payload = {};
 
         // handle simple fields
@@ -48,6 +56,8 @@ block.fn.form = function(config) {
                     break;
             }
         });
+
+        event.preventDefault();
 
         // fire and forget the datablob
         $.ajax(options.target,{
