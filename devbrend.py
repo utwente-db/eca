@@ -1,39 +1,34 @@
 from eca import *
+from eca.generators import start_offline_tweets
+from eca.http import GenerateEvent
 
-import random
+import datetime
+import textwrap
+import time
 
-## You might have to update the root path to point to the correct path
-## (by default, it points to <rules>_static)
-# root_content_path = 'template_static'
+def add_request_handlers(httpd):
+    httpd.add_route('/api/poke', GenerateEvent('poke'), methods=['POST'])
 
-
-# binds the 'setup' function as the action for the 'init' event
-# the action will be called with the context and the event
-@event('init')
+@event('poke')
 def setup(ctx, e):
-    ctx.count = 0
-    fire('sample', {'previous': 0.0})
+    # start the offline tweet stream
+    start_offline_tweets('data/test.txt', 'chirp', time_factor=None)
 
+@event('chirp')
+def tweet(ctx, e):
+    # we receive a tweet
+    tweet = e.data
 
-# define a normal Python function
-def clip(lower, value, upper):
-    return max(lower, min(value, upper))
+    # parse date
+    time = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S %z %Y')
 
-@event('sample')
-def generate_sample(ctx, e):
-    ctx.count += 1
-    if ctx.count % 50 == 0:
-        emit('debug', {'text': 'Log message #'+str(ctx.count)+'!'})
+    # nicify text
+    text = textwrap.fill(tweet['text'],initial_indent='    ', subsequent_indent='    ')
 
-    # base sample on previous one
-    sample = clip(-100, e.previous + random.uniform(+5.0, -5.0), 100)
+    # generate output
+    output = "[{}] {} (@{}):\n{}".format(time, tweet['user']['name'], tweet['user']['screen_name'], text)
+    print(output)
+    print(tweet['user']['profile_image_url'])
+    print()
 
-    # emit to outside world
-    emit('sample',{
-        'action': 'add',
-        'value': sample
-    })
-
-    # chain event
-    fire('sample', {'previous': sample}, delay=0.05)
-
+    emit('tweet', tweet)
