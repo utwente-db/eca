@@ -57,10 +57,30 @@ Updates the block by adding the given value to the given categories current valu
 Removes a category from the block. This is different from setting a category to `0`: visual elements related to the category will be completely removed.
 
 ### reset
-  - `series` (optional): a string dinciating the series to operate on, if left out will reset all series
+  - `series` (optional): a string indiciating the series to operate on, if left out will reset all series
 
 Resets the block to its original state.
 
+
+Normal X,Y chart
+----------------
+
+### set
+  - `series` (optional): a string indicating the series to operate on, if left out operates on default series
+  - `values`: a list of the form `[ [x0, y0], [x1, y1], ... ]` or `[ y0, y1, ...]`
+
+Replaces the current values of the given series (or the default series) with the values given in the `values` field. If the values in the list are given as scalars instead of pairs, the automatic numberings scheme as described with the `add` action is applied.
+
+### add
+  - `series` (optional): a string indicating the series to operate on, if left out operates on default series
+  - `value`: a pair of the form `[ x0, y0 ]` or a value `y0`
+
+Adds the value to this block, taking into account the given series. If the value is given as a pair, it is added to the series verbatim. If it is given as a value, it is assigned an `x` value by incrementing the `x` value of the previous point by 1. If there is no previous point, the value `0` is assigned.
+
+### reset
+  - `series` (optional): a string indicating the series to operate on, if left out operates on default series
+
+Resets the block to its original state. Only resets the given series if a series name is given.
 
 Rolling Chart
 -------------
@@ -74,3 +94,14 @@ Each series of the block is updated with the given value. Any series that is lef
 
 ### reset
 Resets this block to its initial values.
+
+
+Log and Tweet List
+------------------
+
+### default action
+The default action for both the log and the tweets block is to append the given data to the end of the block, possibly removing earlier data.
+
+The `log` block expects a `'text'` field in the given dictionary. This field is used as the content to display.
+
+The `tweets` block expects at least the fields { FIXME }. These fields are used to display the tweet.
