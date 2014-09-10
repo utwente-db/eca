@@ -95,9 +95,9 @@ def offline_tweets(stop, data_file, time_factor=1000):
                 break
 
       
-def start_offline_tweets(data_file, name='tweeter', **kwargs):
+def start_offline_tweets(data_file, event_name='tweet', aux_name='tweeter', **kwargs):
     context = get_context()
     if context is None:
         raise NotImplementedError("Can not start offline tweet replay outside of a context.")
-    register_auxiliary(name, EventGenerator(context, generator=offline_tweets, data_file=data_file, **kwargs))
-    auxiliary(name).start()
+    register_auxiliary(aux_name, EventGenerator(context, generator=offline_tweets, data_file=data_file, event_name=event_name, **kwargs))
+    auxiliary(aux_name).start()
