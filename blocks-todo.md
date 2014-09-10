@@ -65,6 +65,10 @@ Resets the block to its original state.
 Normal X,Y chart
 ----------------
 
+The normal x,y chart is the basic chart used by Flot. It plots a sequence of [x,y] pairs on a field. Configuration can be used to switch between stepped and smooth lines and bars.
+
+It supports multiple series if the configuration includes those. The default series is the first defined series.
+
 ### set
   - `series` (optional): a string indicating the series to operate on, if left out operates on default series
   - `values`: a list of the form `[ [x0, y0], [x1, y1], ... ]` or `[ y0, y1, ...]`
@@ -85,7 +89,7 @@ Resets the block to its original state. Only resets the given series if a series
 Rolling Chart
 -------------
 
-The rolling chart is a special case of chart. It supports series, but must be updated in a single action.
+The rolling chart is a special case of chart. It supports series, but all series must be updated in a single action.
 
 ### add
   - `values`: a dictionary of the form `{ 'series0': value0, 'series1': value1, ... }` to update
@@ -98,6 +102,8 @@ Resets this block to its initial values.
 
 Log and Tweet List
 ------------------
+
+The log and tweet list are textual display blocks. Both blocks expect a dictionary sent at the default action.
 
 ### default action
 The default action for both the log and the tweets block is to append the given data to the end of the block, possibly removing earlier data.
