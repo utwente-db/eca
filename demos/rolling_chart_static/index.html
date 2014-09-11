@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Neca Test</title>
+<link rel="stylesheet" href="/style/layout.css"/>
+<link rel="stylesheet" href="/style/theme.css"/>
+<script src="/lib/jquery-2.1.1.min.js"></script>
+<script src="/lib/jquery.flot.min.js"></script>
+<script src="/lib/core.js"></script>
+<script src="/lib/charts.js"></script>
+</head>
+<body class="container_12">
+<h1>ECA Dashboard Template</h1>
+
+<div id="graph0" class="grid_12 vert_5"></div>
+<div id="graph1" class="grid_12 vert_5"></div>
+
+<script>
+// create a rolling chart block
+block('#graph0').rolling_chart({
+    memory: 75,
+    series: {
+        'sensor0': {},
+        'sensor1': {}
+    },
+    chart: {
+        yaxis:{
+            min: -100,
+            max: 100
+        },
+        xaxis: {
+            show: false
+        }
+    }
+});
+
+block('#graph1').rolling_chart({
+    memory: 150,
+    series: {
+        'sensor0': {},
+        'sensor1': {},
+        'sensor2': {
+            lines: {
+                fill: true,
+                steps: true
+            }
+        }
+    },
+    chart: {
+        yaxis:{
+            min: -100,
+            max: 100
+        },
+        xaxis: {
+            show: false
+        }
+    }
+});
+
+// connect sample event to graph
+events.connect('sample', '#graph0');
+events.connect('sample', '#graph1');
+</script>
+</body>
+</html>
