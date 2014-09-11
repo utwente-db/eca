@@ -9,7 +9,6 @@
 <script src="/lib/core.js"></script>
 <script src="/lib/charts.js"></script>
 <script src="/lib/log.js"></script>
-<script src="rolling_chart.js"></script>
 </head>
 <body class="container_12">
 <h1>ECA Dashboard Template</h1>
@@ -19,7 +18,7 @@
 
 <script>
 // create a rolling chart block
-block('#graph0').rolling_chart2({
+block('#graph0').rolling_chart({
     memory: 75,
     series: {
         'sensor0': {},
@@ -36,7 +35,7 @@ block('#graph0').rolling_chart2({
     }
 });
 
-block('#graph1').rolling_chart2({
+block('#graph1').rolling_chart({
     memory: 150,
     series: {
         'sensor0': {},
