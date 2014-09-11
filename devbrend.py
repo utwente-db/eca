@@ -28,9 +28,13 @@ def tweet(ctx, e):
 
     # generate output
     output = "[{}] {} (@{}):\n{}".format(time, tweet['user']['name'], tweet['user']['screen_name'], text)
-    print(output)
-    print(tweet['user']['profile_image_url'])
+    # print(output)
+
+    print('-----------------------')
     print()
-    pprint.pprint(tweet)
+    pprint.pprint(tweet['text'])
+    print()
+    pprint.pprint(tweet['entities'])
+    print()
 
     emit('tweet', tweet)
