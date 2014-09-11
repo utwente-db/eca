@@ -9,24 +9,59 @@
 <script src="/lib/core.js"></script>
 <script src="/lib/charts.js"></script>
 <script src="/lib/log.js"></script>
-<script src="/lib/tweets.js"></script>
+<script src="rolling_chart.js"></script>
 </head>
 <body class="container_12">
 <h1>ECA Dashboard Template</h1>
 
-<div class="grid_2"></div>
-<div id="whoop" class="grid_8 vert_4"></div>
+<div id="graph0" class="grid_12 vert_5"></div>
+<div id="graph1" class="grid_12 vert_5"></div>
 
 <script>
-block('#whoop').tweets({
+// create a rolling chart block
+block('#graph0').rolling_chart2({
+    memory: 75,
+    series: {
+        'sensor0': {},
+        'sensor1': {}
+    },
+    chart: {
+        yaxis:{
+            min: -100,
+            max: 100
+        },
+        xaxis: {
+            show: false
+        }
+    }
 });
 
-events.connect('tweet', '#whoop');
-
-$.ajax('/api/poke',{
-    method: 'POST',
-    data: JSON.stringify({})
+block('#graph1').rolling_chart2({
+    memory: 150,
+    series: {
+        'sensor0': {},
+        'sensor1': {},
+        'sensor2': {
+            lines: {
+                fill: true,
+                steps: true
+            }
+        }
+    },
+    chart: {
+        yaxis:{
+            min: -100,
+            max: 100
+        },
+        xaxis: {
+            show: false
+        }
+    }
 });
+
+// connect sample event to graph
+events.connect('sample', '#graph0');
+events.connect('sample', '#graph1');
 </script>
 </body>
 </html>
