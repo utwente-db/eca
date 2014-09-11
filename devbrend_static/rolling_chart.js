@@ -20,9 +20,12 @@ block.fn.rolling_chart2 = function(config) {
     var prepare_data = function() {
         var result = [];
 
+        // process each series
         for(var k in data) {
             var series = data[k];
             var points = [];
+
+            // create point pairs and gap values
             for(var i in series) {
                 if(series[i] == null) {
                     points.push(null);
@@ -30,7 +33,9 @@ block.fn.rolling_chart2 = function(config) {
                     points.push([i, series[i]]);
                 }
             }
-            result.push($.extend(options.series[k],{data: points}));
+
+            // combine state data with series configuration by user
+            result.push($.extend(options.series[k], {data: points}));
         }
 
         return result;
@@ -43,7 +48,7 @@ block.fn.rolling_chart2 = function(config) {
     // register actions for this block
     this.actions({
         'add': function(e, message) {
-            // deliberately undocumented feature (explicit is better):
+            // if the 'value' field is used, update all series (useful with a single series)
             if(typeof message.values == 'undefined' && typeof message.value != 'undefined') {
                 message.values = {}
                 for(var k in options.series) {
