@@ -29,21 +29,23 @@ def generate_sample(ctx, e):
     sample = clip(-100, e.previous + random.uniform(+5.0, -5.0), 100)
 
     # emit to outside world
+    // emit('sample',{
+        // 'action': 'add',
+        // 'serie': 'serie1',
+        // 'value': sample
+    // })
+    // emit('sample',{
+        // 'action': 'add',
+        // 'serie': 'serie2',
+        // 'value': - sample
+    // })
+    // emit('sample',{
+        // 'action': 'redraw',
+        // 'value': 0
+    // })
     emit('sample',{
-        'action': 'add',
-        'value': { 'serie1':sample, 'serie2':-sample}
-    })
-    emit('sample',{
-        'action': 'add',
-        'value': { 'serie1':sample+10, 'serie2':-sample+20}
-    })
-    emit('sample',{
-        'action': 'add',
-        'value': { 'serie1':sample+10}
-    })
-    emit('sample',{
-        'action': 'add',
-        'value': { 'serie1':sample+10}
+        'action': 'addnew',
+        'value': { 'serie1': sample, 'serie2', -sample}
     })
 
     # chain event

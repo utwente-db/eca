@@ -10,6 +10,12 @@
 <script src="/lib/blocks.js"></script>
 <script src="/lib/charts.js"></script>
 <script src="/lib/log.js"></script>
+
+<link rel="stylesheet" type="text/css" href="lib/jqcloud.css" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.js"></script>
+<script type="text/javascript" src="lib/jqcloud-1.0.4.js"></script>
+<script src="/lib/wordcloud.js"></script>
+
 </head>
 <body class="container_12">
 <h1>ECA Dashboard Template</h1>
@@ -61,5 +67,35 @@ block('#graph').rolling_chart({
 // connect sample event to graph
 events.connect('sample', '#graph');
 </script>
+
+
+</div>
+<div id="mywordcloud" class="grid_8 vert_4"></div>
+
+<script>
+// create a rolling chart block
+block('#graph').rolling_chart({
+    memory: 150,
+    series: {
+            serie1 : {label:"serie1", color:'red'},
+            serie2 : {label:"serie2", color: 'green'}
+    },
+    chart: {
+        yaxis:{
+            min: -100,
+            max: 100
+        },
+        xaxis: {
+            show: false
+        }
+    }
+});
+
+// connect sample event to graph
+events.connect('wordsample', '#mywordcloud');
+</script>
+
+// <div id="my_favorite_latin_words" class="grid_12 vert_8"></div>
+
 </body>
 </html>

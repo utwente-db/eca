@@ -4,38 +4,73 @@
 block.fn.rolling_chart = function(config) {
     var options = $.extend({
         memory: 100,
-        data: []
+        series: { serie : {label:"serie", color:'black'} }
     }, config);
 
-    var data = options.data.slice();
-
-    var prepare_data = function() {
+    var handle_data = function(values) {
         var result = [];
 
-        for(var i in data) {
-            result.push([i, data[i]]);
+        for(var i in values) {
+            result.push([i, values[i]]);
         }
-
-        return [result];
+        return result;
     };
 
-    var plot = $.plot(this.$element, prepare_data(), options.chart);
-
-    this.actions({
-        'add': function(e, message) {
-            // roll memory
-            if(data.length > options.memory) {
-                data = data.slice(1);
+    var xo = { series: {
+            lines: { show: true },
+            points: {
+                radius: 3,
+                show: true,
+                fill: true
             }
+        }};
 
-            data.push(message.value);
+    var plot = $.plot(this.$element, [] , {});
 
-            plot.setData(prepare_data());
+    var reset = function() {
+        var result = options.series;
+	for(var k in result) {
+	    if (result.hasOwnProperty(k)) {
+	        result[k].databuffer = [];
+	    }
+	}
+	return result;
+    }
+
+    var plot_series = reset();
+
+    var add_to_serie = function(skey,value) {
+	var databuffer = plot_series[skey].databuffer;
+        if(databuffer.length > options.memory) {
+            plot_series[skey].databuffer = databuffer.slice(1);
+        }
+	databuffer.push(value);
+    }
+
+    var redraw = function(serie_value) {
+    	    var plot_current = [];
+	    var mykeys = Object.keys(plot_series);
+	    for(var mykey in mykeys) {
+		var skey = mykeys[mykey];
+		var serie = plot_series[skey];
+		// serie['databuffer'].push(serie_value[skey]);
+		add_to_serie(skey,serie_value[skey]);
+		serie['data'] = handle_data(serie['databuffer']);
+		plot_current.push(serie);
+	    }
+            plot.setData(plot_current);
             plot.setupGrid();
             plot.draw();
         }
-    });
 
+    this.actions({
+        'add': function(e, message) {
+	    redraw(message.value);
+        },
+        'reset': function(e, message) {
+	    plot_series = reset();
+	}
+    });
     // return element to allow further work
     return this.$element;
 }
