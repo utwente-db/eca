@@ -123,8 +123,8 @@ def GenerateEvent(name):
 
 class EventStream(sse.ServerSideEvents):
     def go_subscribe(self):
-        def receiver(name, data):
-            self.send_event(data.json, data.name, data.id)
+        def receiver(name, event):
+            self.send_event(event.data.get('json'), event.name, event.data.get('id'))
 
         self.receiver = receiver
         context = get_context()
