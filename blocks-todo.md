@@ -108,18 +108,18 @@ The log and tweet list are textual display blocks. Both blocks expect a dictiona
 ### default action
 The default action for both the log and the tweets block is to append the given data to the end of the block, possibly removing earlier data.
 
-The `log` block expects at least a `{text: "..."}` shaped dictionary. The 'text' field is used as the content to display.
+The `log` block expects at least a `{'text': "..."}` shaped dictionary. The 'text' field is used as the content to display.
 
 The `tweets` block expects at least the following fields (with the `entities` field being optional):
 
     {
-        user: {
-            screen_name: "...",
-            name: "..."
+        'user': {
+            'screen_name': "...",
+            'name': "..."
         },
-        created_at: "...",
-        text: "...",
-        entities: {
+        'created_at': "...",
+        'text': "...",
+        'entities': {
             ...
         }
     }
