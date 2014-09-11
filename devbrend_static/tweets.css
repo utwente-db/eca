@@ -1,11 +1,11 @@
 /** Required **/
 
-.tweets * {
+.tweet-list * {
     margin: 0;
     padding: 0;
 }
 
-.tweets.stream-items {
+.tweet-list.stream-items {
     position: relative;
     margin-left: 0;
     background-color: #fff;
@@ -24,115 +24,120 @@
     height: 100%;
 }
 
-.tweets .stream-item {
+.tweet-list .stream-item {
     background: #fff;
     background-clip: padding-box;
 }
 
-.tweets .stream-item:hover {
+.tweet-list .stream-item:hover {
     background-color: #eee;
 }
 
-.tweets li.stream-item {
+.tweet-list li.stream-item {
     line-height: inherit
 }
 
-.tweets .tweet {
+.tweet-list .tweet {
     position: relative;
     min-height: 51px;
     padding: 9px 12px;
 }
 
-.tweets .stream-item + .stream-item {
+.tweet-list .stream-item + .stream-item {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.tweets .tweet p {
+.tweet-list .tweet p {
     word-wrap: break-word
 }
 
-.tweets .tweet .details {
+.tweet-list .tweet .details {
     display: inline-block;
     margin-right: 2px
 }
 
-.tweets .tweet .context a {
+.tweet-list .tweet .context a {
     color: #999
 }
 
-.tweets .stream-item .content {
+.tweet-list .stream-item .content {
     margin-left: 58px
 }
 
-.tweets .stream-item-header .avatar {
+.tweet-list .stream-item-header .avatar {
     float: left;
     margin-top: 3px;
     margin-left: -58px
 }
-.tweets .account-group {
+.tweet-list .account-group {
     color: #999
 }
 
-.tweets a {
+.tweet-list a {
     color: #0084b4;
     text-decoration: none
 }
 
-.tweets a:focus {
+.tweet-list a:focus {
     outline: 0
 }
 
-.tweets a:hover,
-.tweets a:focus {
+.tweet-list a:hover,
+.tweet-list a:focus {
     color: #0084b4;
     text-decoration: underline
 }
 
-.tweets .avatar {
+.tweet-list a.account-group:hover,
+.tweet-list a.account-group:focus {
+    text-decoration: none;
+}
+
+.tweet-list a.account-group:hover .fullname,
+.tweet-list a.account-group:focus .fullname {
+    text-decoration: underline;
+}
+
+.tweet-list .avatar {
     width: 48px;
     height: 48px;
     border-radius: 5px;
     -moz-force-broken-image-icon: 1
 }
 
-.tweets .fullname {
+.tweet-list .fullname {
     font-weight: bold;
     color: #333;
 }
 
-.tweets a:focus .fullname,
-.tweets a:hover .fullname {
-    color: #0084b4;
-}
-
-.tweets .username {
+.tweet-list .username {
     font-size: 12px;
     color: #999
 }
 
-.tweets .username s {
+.tweet-list .username s {
     color: #bbb
 }
 
-.tweets s {
+.tweet-list s {
     text-decoration: none
 }
 
-.tweets b {
+.tweet-list b {
     font-weight: normal
 }
 
-.tweets .tweet .time {
+.tweet-list .tweet .time {
     position: relative;
     float: right;
     margin-top: 1px;
     color: #bbb
 }
 
-.tweets .tweet-timestamp {
+.tweet-list .tweet-timestamp {
     color: #999
 }
 
-.tweets .tweet .tweet-text {
+.tweet-list .tweet .tweet-text {
     white-space: pre-wrap
 }

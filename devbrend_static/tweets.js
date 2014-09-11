@@ -7,7 +7,11 @@ var entity_formatters = {
     },
     
     'user_mentions': function(e) {
-        return '<a href="http://twitter.com/'+e.screen_name+'">@'+e.screen_name+'</a>';
+        return '<a href="https://twitter.com/'+e.screen_name+'">@'+e.screen_name+'</a>';
+    },
+
+    'hashtags': function(e) {
+        return '<a href="https://twitter.com/hashtag/'+e.text+'?src=hash">#' +e.text+'</a>';
     },
 
     'default': function(e) {
@@ -68,7 +72,7 @@ block.fn.tweets = function(config) {
     }, config);
 
     // create the necessary HTML in the block container
-    this.$element.append('<ol class="tweets stream-items"></ol>');
+    this.$element.append('<ol class="tweet-list stream-items"></ol>');
 
     // store list for later
     var $list = this.$element.find('ol');
@@ -90,7 +94,7 @@ block.fn.tweets = function(config) {
         $avatar.attr("src", tweet.user.profile_image_url);
         $account.append($avatar);
         $account.append($('<strong class="fullname">' + tweet.user.name + '</strong>'));
-        $account.append($('<span>&rlm;&nbsp;</span>'));
+        $account.append($('<span>&nbsp;</span>'));
         $account.append($('<span class="username"><s>@</s><b>' + tweet.user.screen_name + '</b></span>'));
         $header.append($account);
 
