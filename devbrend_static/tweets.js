@@ -1,5 +1,9 @@
 (function($, block) {
 block.fn.tweets = function(config) {
+    var options = $.extend({
+        memory: 20
+    }, config);
+
     // create the necessary HTML in the block container
     this.$element.append('<ol class="tweets stream-items"></ol>');
 
@@ -44,11 +48,11 @@ block.fn.tweets = function(config) {
         tweetDiv.append(contentDiv);
         newItem.append(tweetDiv);
         
-        
+        // place new tweet in front of list 
         $list.prepend(newItem);
 
-        //FIXME hardcoded backlog
-        if ($list.children().size() > 4) {
+        // remove stale tweets
+        if ($list.children().size() > options.memory) {
             $list.children().last().remove();
         }
     });

@@ -5,6 +5,7 @@ from eca.http import GenerateEvent
 import datetime
 import textwrap
 import time
+import pprint
 
 def add_request_handlers(httpd):
     httpd.add_route('/api/poke', GenerateEvent('poke'), methods=['POST'])
@@ -30,5 +31,6 @@ def tweet(ctx, e):
     print(output)
     print(tweet['user']['profile_image_url'])
     print()
+    pprint.pprint(tweet)
 
     emit('tweet', tweet)
