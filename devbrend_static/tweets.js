@@ -12,44 +12,41 @@ block.fn.tweets = function(config) {
 
     // register default handler for handling tweet data
     this.actions(function(e, tweet){
-        var newItem = $('<li class="stream-item"></li>');
+        var $item = $('<li class="stream-item"></li>');
 
-        var tweetDiv = $('<div class="tweet"></div>');
-        var contentDiv = $('<div class="content"></div>');
-        var headerDiv = $('<div class="stream-item-header"></div>');
+        var $tweet = $('<div class="tweet"></div>');
+        var $content = $('<div class="content"></div>');
+        var $header = $('<div class="stream-item-header"></div>');
 
         // Build a tag image and header:
-        var aTag1 = $('<a class="account-group"></a>');
-        aTag1.attr("href", "http://twitter.com/" + tweet.user.screen_name);
+        var $account = $('<a class="account-group"></a>');
+        $account.attr("href", "http://twitter.com/" + tweet.user.screen_name);
 
-        var avatar = $("<img>").addClass("avatar");
-        avatar.attr("src", tweet.user.profile_image_url);
-        aTag1.append(avatar);
-        aTag1.append($('<strong class="fullname">' + tweet.user.name + '</strong>'));
-        aTag1.append($('<span>&rlm;&nbsp;</span>'));
-        aTag1.append($('<span class="username"><s>@</s><b>' + tweet.user.screen_name + '</b></span>'));
-        headerDiv.append(aTag1);
+        var $avatar = $("<img>").addClass("avatar");
+        $avatar.attr("src", tweet.user.profile_image_url);
+        $account.append($avatar);
+        $account.append($('<strong class="fullname">' + tweet.user.name + '</strong>'));
+        $account.append($('<span>&rlm;&nbsp;</span>'));
+        $account.append($('<span class="username"><s>@</s><b>' + tweet.user.screen_name + '</b></span>'));
+        $header.append($account);
 
         // Build timestamp:
-        var smallTag = $('<small class="time"></small>');
-        var aTag2 = $('<a class="tweet-timestamp"></a>');
-        aTag2.attr("href", "http://twitter.com/" + tweet.user.screen_name + "/status/" + tweet.id);
-        aTag2.attr("title", tweet.created_at);
-        aTag2.append($('<span>' + tweet.created_at + '</span>'));
-        smallTag.append(aTag2);
-        headerDiv.append(smallTag);
-        contentDiv.append(headerDiv);
+        var $time = $('<small class="time"></small>');
+        $time.append($('<span>' + tweet.created_at + '</span>'));
+
+        $header.append($time);
+        $content.append($header);
 
         // Build contents:
-        var pTag = $('<p class="tweet-text">' + tweet.text + '</p>');
-        contentDiv.append(pTag);
+        var $text = $('<p class="tweet-text">' + tweet.text + '</p>');
+        $content.append($text);
 
         // Build outer structure of containing divs:
-        tweetDiv.append(contentDiv);
-        newItem.append(tweetDiv);
+        $tweet.append($content);
+        $item.append($tweet);
         
         // place new tweet in front of list 
-        $list.prepend(newItem);
+        $list.prepend($item);
 
         // remove stale tweets
         if ($list.children().size() > options.memory) {
