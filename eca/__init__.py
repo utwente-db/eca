@@ -116,8 +116,8 @@ class Event:
         self.name = name
         self.data = data
 
-    def get(self, key):
-        return self.data.get(key)
+    def get(self, *args, **kwargs):
+        return self.data.get(*args, **kwargs)
 
     def __str__(self):
         data_strings = []
