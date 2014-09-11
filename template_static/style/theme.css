@@ -28,3 +28,133 @@ pre {
 .debug_blue  { background-color: rgba(0,0,255,0.5); }
 
 
+/* Tweets block */
+
+.tweet-list.stream-items {
+    position: relative;
+    background-color: #fff;
+    list-style: none;
+    color: #333;
+    font-size: 14px;
+    line-height: 18px;
+    font-family: arial, sans-serif;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.tweet-list .stream-item {
+    background: #fff;
+    background-clip: padding-box;
+}
+
+.tweet-list .stream-item:hover {
+    background-color: #eee;
+}
+
+.tweet-list li.stream-item {
+    line-height: inherit
+}
+
+.tweet-list .tweet {
+    position: relative;
+    min-height: 51px;
+    padding: 9px 12px;
+}
+
+.tweet-list .stream-item + .stream-item {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.tweet-list .tweet p {
+    word-wrap: break-word
+}
+
+.tweet-list .tweet .details {
+    display: inline-block;
+    margin-right: 2px
+}
+
+.tweet-list .tweet .context a {
+    color: #999
+}
+
+.tweet-list .stream-item .content {
+    margin-left: 58px
+}
+
+.tweet-list .stream-item-header .avatar {
+    float: left;
+    margin-top: 3px;
+    margin-left: -58px
+}
+.tweet-list .account-group {
+    color: #999
+}
+
+.tweet-list a {
+    color: #0084b4;
+    text-decoration: none
+}
+
+.tweet-list a:focus {
+    outline: 0
+}
+
+.tweet-list a:hover,
+.tweet-list a:focus {
+    color: #0084b4;
+    text-decoration: underline
+}
+
+.tweet-list a.account-group:hover,
+.tweet-list a.account-group:focus {
+    text-decoration: none;
+}
+
+.tweet-list a.account-group:hover .fullname,
+.tweet-list a.account-group:focus .fullname {
+    text-decoration: underline;
+}
+
+.tweet-list .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 5px;
+    -moz-force-broken-image-icon: 1
+}
+
+.tweet-list .fullname {
+    font-weight: bold;
+    color: #333;
+}
+
+.tweet-list .username {
+    font-size: 12px;
+    color: #999
+}
+
+.tweet-list .username s {
+    color: #bbb
+}
+
+.tweet-list s {
+    text-decoration: none
+}
+
+.tweet-list b {
+    font-weight: normal
+}
+
+.tweet-list .tweet .time {
+    position: relative;
+    float: right;
+    margin-top: 1px;
+    color: #bbb
+}
+
+.tweet-list .tweet-timestamp {
+    color: #999
+}
+
+.tweet-list .tweet .tweet-text {
+    white-space: pre-wrap
+}
