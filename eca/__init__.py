@@ -116,9 +116,6 @@ class Event:
         self.name = name
         self.data = data
 
-    def __getattr__(self, name):
-        return self.data[name]
-
     def __str__(self):
         data_strings = []
         if isinstance(self.data, collections.Mapping):
