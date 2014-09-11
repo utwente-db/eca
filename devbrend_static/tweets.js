@@ -1,4 +1,67 @@
 (function($, block) {
+
+// Entity formatters for use by tweet list
+var entity_formatters = {
+    'urls': function(e) {
+        return '<a href="' + e.url + '">' + e.display_url + '</a>';
+    },
+    
+    'user_mentions': function(e) {
+        return '<a href="http://twitter.com/'+e.screen_name+'">@'+e.screen_name+'</a>';
+    },
+
+    'default': function(e) {
+        return '{ENTITY}';
+    }
+};
+
+// processes entities for the given message and entity object
+var process_entities = function(message, entities) {
+    // short-circuit failure mode
+    if(typeof entities === 'undefined') {
+        return message;
+    }
+
+    // build list of entities sorted on starting index
+    var es = [];
+
+    $.each(entities, function(t, ts) {
+        $.each(ts, function(_, e) {
+            e['type'] = t;
+            es.push(e);
+        });
+    });
+
+    es.sort(function(a,b) {
+        return a['indices'][0] - b['indices'][0];
+    });
+
+    // process entities one-by-one in order of appearance
+    var marker = 0;
+    var result = "";
+    for(var i in es) {
+        var e = es[i];
+        var start = e['indices'][0];
+        var stop = e['indices'][1];
+
+        //copy string content
+        result += message.substring(marker, start);
+
+        //process entity (through formatter or no-op function)
+        var formatter = entity_formatters[e.type]
+                        || function(e) { return message.substring(start,stop) };
+        result += formatter(e);
+
+        // update marker location
+        marker = stop;
+    }
+
+    // append tail of message
+    result += message.substring(marker, message.length);
+
+    return result;
+}
+
 block.fn.tweets = function(config) {
     var options = $.extend({
         memory: 20
@@ -9,6 +72,7 @@ block.fn.tweets = function(config) {
 
     // store list for later
     var $list = this.$element.find('ol');
+
 
     // register default handler for handling tweet data
     this.actions(function(e, tweet){
@@ -38,7 +102,8 @@ block.fn.tweets = function(config) {
         $content.append($header);
 
         // Build contents:
-        var $text = $('<p class="tweet-text">' + tweet.text + '</p>');
+        var text = process_entities(tweet.text, tweet.entities);
+        var $text = $('<p class="tweet-text">' + text + '</p>');
         $content.append($text);
 
         // Build outer structure of containing divs:
