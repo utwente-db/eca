@@ -26,26 +26,14 @@ def generate_sample(ctx, e):
         emit('debug', {'text': 'Log message #'+str(ctx.count)+'!'})
 
     # base sample on previous one
-    sample = clip(-100, e.previous + random.uniform(+5.0, -5.0), 100)
+
+    sample = random.uniform(+5.0, -5.0)
 
     # emit to outside world
-    emit('sample',{
+    emit('piesample',{
         'action': 'add',
-        'value': { 'serie1':sample, 'serie2':-sample}
+        'value': ['serie'+str(int(random.uniform(+5.0,0))+1) ,random.uniform(+10.0,0)]
     })
-    emit('sample',{
-        'action': 'add',
-        'value': { 'serie1':sample+10, 'serie2':-sample+20}
-    })
-    emit('sample',{
-        'action': 'add',
-        'value': { 'serie1':sample+10}
-    })
-    emit('sample',{
-        'action': 'add',
-        'value': { 'serie1':sample+10}
-    })
-
     # chain event
     fire('sample', {'previous': sample}, delay=0.05)
 
