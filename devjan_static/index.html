@@ -49,6 +49,9 @@ The <code>@event</code> part tells the system to fire the action whenever the ev
 })</pre>
 
 </div>
+
+
+
 <div id="piegraph" class="grid_8 vert_4"></div>
 
 <script>
@@ -67,7 +70,24 @@ block('#piegraph').piechart({
 events.connect('piesample', '#piegraph');
 </script>
 
-</div>
+<div id="wordcloud" class="grid_8 vert_4"></div>
+
+<script>
+// create a wordcloud block
+block('#wordcloud').wordcloud({
+    word_options: 
+    {
+    	series: {	
+		pie: { show: true }
+		},
+        legend: { show: false }
+    }
+});
+
+// connect sample event to graph
+events.connect('wordsample', '#wordcloud');
+</script>
+
 
 // <div id="my_favorite_latin_words" class="grid_12 vert_8"></div>
 

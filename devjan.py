@@ -29,10 +29,17 @@ def generate_sample(ctx, e):
 
     sample = random.uniform(+5.0, -5.0)
 
+    l = 'serie'+str(int(random.uniform(+5.0,0))+1)
+    v = random.uniform(+10.0,0)
+
     # emit to outside world
     emit('piesample',{
         'action': 'add',
-        'value': ['serie'+str(int(random.uniform(+5.0,0))+1) ,random.uniform(+10.0,0)]
+        'value': [l,v]
+    })
+    emit('wordsample',{
+        'action': 'add',
+        'value': [l,v]
     })
     # chain event
     fire('sample', {'previous': sample}, delay=0.05)

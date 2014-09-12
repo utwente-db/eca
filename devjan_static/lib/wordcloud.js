@@ -1,79 +1,62 @@
 (function($, block) {
 
-// a simple rolling chart with memory
-block.fn.jquery_wordcloud = function(config) {
+// a simple wordcloud example
+block.fn.wordcloud = function(config) {
     var options = $.extend({
-        memory: 100,
-        data: []
-    }, config);
+        word_options : {
+		series: {	
+			pie: {
+                		show: true
+        		}
+    		}
+    }}, config);
 
-    var words = [
-        {text: "Lorem", weight: 13, link: "https://github.com/DukeLeNoir/jQCloud"},
-        {text: "Ipsum", weight: 10.5, html: {title: "My Title", "class": "custom-class"}, link: {href: "http://jquery.com/", target: "_blank"}},
-        {text: "Dolor", weight: 9.4},
-        {text: "Sit", weight: 8},
-        {text: "Amet", weight: 6.2},
-        {text: "Consectetur", weight: 5},
-        {text: "Adipiscing", weight: 5},
-        {text: "Elit", weight: 5},
-        {text: "Nam et", weight: 5},
-        {text: "Leo", weight: 4},
-        {text: "Sapien", weight: 4},
-        {text: "Pellentesque", weight: 3},
-        {text: "habitant", weight: 3},
-        {text: "morbi", weight: 3},
-        {text: "tristisque", weight: 3},
-        {text: "senectus", weight: 3},
-        {text: "et netus", weight: 3},
-        {text: "et malesuada", weight: 3},
-        {text: "fames", weight: 2},
-        {text: "ac turpis", weight: 2},
-        {text: "egestas", weight: 2},
-        {text: "Aenean", weight: 2},
-        {text: "vestibulum", weight: 2},
-        {text: "elit", weight: 2},
-        {text: "sit amet", weight: 2},
-        {text: "metus", weight: 2},
-        {text: "adipiscing", weight: 2},
-        {text: "ut ultrices", weight: 2},
-        {text: "justo", weight: 1},
-        {text: "dictum", weight: 1},
-        {text: "Ut et leo", weight: 1},
-        {text: "metus", weight: 1},
-        {text: "at molestie", weight: 1},
-        {text: "purus", weight: 1},
-        {text: "Curabitur", weight: 1},
-        {text: "diam", weight: 1},
-        {text: "dui", weight: 1},
-        {text: "ullamcorper", weight: 1},
-        {text: "id vuluptate ut", weight: 1},
-        {text: "mattis", weight: 1},
-        {text: "et nulla", weight: 1},
-        {text: "Sed", weight: 1}
-      ];
+    // create empty wordcloud with parameter options
+    var wordcloud_el = $(this.$element).jQCloud([{text: "TEXT", weight: 1}]);
 
-      // $(function() {
-        // $("#my_favorite_latin_words").jQCloud(word_list);
-      // });
+    // dict containing the labels and values
+    var worddata_dict = {};
 
-    var prepare_data = function() {
-        return words;
-    };
+    var addword = function(label, value) {
+	if (worddata_dict.hasOwnProperty(label))
+		worddata_dict[label] = (worddata_dict[label] + value);
+	else
+		worddata_dict[label] = value;
+	redraw();
+    }
 
-    // var plot = $.plot(this.$element, prepare_data(), options.chart);
-    var wc = $(this.$element).jQCloud(words);
-    // $.plot(this.$element, prepare_data(), options.chart);
+    var setword = function(label, value) {
+	worddata_dict[label] = value;
+	redraw();
+    }
+
+    var redraw = function() {
+        var result = [];
+	for(var k in worddata_dict) {
+	    if (worddata_dict.hasOwnProperty(k)) {
+ 		result.push({text:k,weight:worddata_dict[k]});
+	    }
+	}
+	// console.log(result);
+	$(this.$element).empty(); // jQuery clear children
+        wordcloud_el = $(this.$element).jQCloud(result);
+    }
+
+    var reset = function() {
+	worddata_dict = {};
+    }
 
     this.actions({
-        'addword': function(e, message) {
-            // roll memory
-            // plot.setData(prepare_data());
-            // plot.setupGrid();
-            // plot.draw();
-    	    $(this.$element).jQCloud(words);
-        }
+        'set': function(e, message) {
+	    setword(message.value[0],message.value[1]);
+        },
+        'add': function(e, message) {
+	    addword(message.value[0],message.value[1]);
+        },
+        'reset': function(e, message) {
+	    reset();
+	}
     });
-
     // return element to allow further work
     return this.$element;
 }
