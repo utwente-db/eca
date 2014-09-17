@@ -11,6 +11,8 @@
 <script src="/lib/blocks.js"></script>
 <script src="/lib/charts.js"></script>
 <script src="/lib/piecharts.js"></script>
+<script src="/lib/barcharts.js"></script>
+<script src="/lib/linecharts.js"></script>
 <script src="/lib/log.js"></script>
 
 <link rel="stylesheet" type="text/css" href="lib/jqcloud.css" />
@@ -52,44 +54,23 @@ The <code>@event</code> part tells the system to fire the action whenever the ev
 
 
 
-<div id="piegraph" class="grid_8 vert_4"></div>
+<div id="linegraph" class="grid_8 vert_4"></div>
 
 <script>
-// create a piechart chart block
-block('#piegraph').piechart({
-    pie_options: 
+// create a linechart chart block
+block('#linegraph').linechart({
+    line_series : ["lineA", "lineB"],
+    line_options: 
     {
     	series: {	
-		pie: { show: true }
+		lines: { show: true }
 		},
-        legend: { show: false }
     }
 });
 
 // connect sample event to graph
-events.connect('piesample', '#piegraph');
+events.connect('linesample', '#linegraph');
 </script>
-
-<div id="wordcloud" class="grid_8 vert_4"></div>
-
-<script>
-// create a wordcloud block
-block('#wordcloud').wordcloud({
-    word_options: 
-    {
-    	series: {	
-		pie: { show: true }
-		},
-        legend: { show: false }
-    }
-});
-
-// connect sample event to graph
-events.connect('wordsample', '#wordcloud');
-</script>
-
-
-// <div id="my_favorite_latin_words" class="grid_12 vert_8"></div>
 
 </body>
 </html>
