@@ -24,19 +24,28 @@ def generate_sample(ctx, e):
     ctx.count += 1
     if ctx.count % 50 == 0:
         emit('debug', {'text': 'Log message #'+str(ctx.count)+'!'})
+        emit('barsample', {'action': 'reset'})
 
     # base sample on previous one
 
     sample = random.uniform(+5.0, -5.0)
 
-    l = 'serie'+str(int(random.uniform(+5.0,0))+1)
+    li = int(random.uniform(+5.0,0))+1
+    l = 'cat'+str(li)
     v = random.uniform(+10.0,0)
 
     # emit to outside world
-    emit('piesample',{
-        'action': 'add',
-        'value': [l,v]
-    })
+    # emit('linesample',{
+        # 'action': 'add',
+	# 'series' : 'lineA',
+        # 'value': [[ctx.count,random.uniform(+10.0,0)]]
+    # })
+    # emit('linesample',{
+        # 'action': 'add',
+	# 'series' : 'lineB',
+        # 'value': [[ctx.count,random.uniform(+10.0,0)]]
+    # })
+    emit('barsample',{ 'action': 'set', 'series': 'serie'+str(int(random.uniform(1,4))), 'value': [l,v] })
     emit('wordsample',{
         'action': 'add',
         'value': [l,v]
