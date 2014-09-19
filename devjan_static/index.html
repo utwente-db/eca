@@ -6,13 +6,13 @@
 <link rel="stylesheet" href="/style/theme.css"/>
 <script src="/lib/jquery-2.1.1.min.js"></script>
 <script src="/lib/jquery.flot.min.js"></script>
+<script src="/lib/jquery.flot.categories.min.js"></script>
 <script src="/lib/jquery.flot.pie.js"></script>
 <script src="/lib/events.js"></script>
 <script src="/lib/blocks.js"></script>
 <script src="/lib/charts.js"></script>
 <script src="/lib/piecharts.js"></script>
 <script src="/lib/barcharts.js"></script>
-<script src="/lib/linecharts.js"></script>
 <script src="/lib/log.js"></script>
 
 <link rel="stylesheet" type="text/css" href="lib/jqcloud.css" />
@@ -54,23 +54,47 @@ The <code>@event</code> part tells the system to fire the action whenever the ev
 
 
 
-<div id="linegraph" class="grid_8 vert_4"></div>
+<div id="bargraph" class="grid_8 vert_4"></div>
 
 <script>
-// create a linechart chart block
-block('#linegraph').linechart({
-    line_series : ["lineA", "lineB"],
-    line_options: 
+// create a barchart chart block
+block('#bargraph').barchart({
+    bar_options: 
     {
     	series: {	
-		lines: { show: true }
+		bar: { show: true }
 		},
+        bars: {
+	    align: "center",
+	        barWidth: 0.5
+	}
     }
 });
 
 // connect sample event to graph
-events.connect('linesample', '#linegraph');
+events.connect('barsample', '#bargraph');
 </script>
+
+<div id="wordcloud" class="grid_8 vert_4"></div>
+
+<script>
+// create a wordcloud block
+block('#wordcloud').wordcloud({
+    word_options: 
+    {
+    	series: {	
+		pie: { show: true }
+		},
+        legend: { show: false }
+    }
+});
+
+// connect sample event to graph
+events.connect('wordsample', '#wordcloud');
+</script>
+
+
+// <div id="my_favorite_latin_words" class="grid_12 vert_8"></div>
 
 </body>
 </html>

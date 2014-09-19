@@ -3,77 +3,102 @@
 // a simple barchart example
 block.fn.barchart = function(config) {
     var options = $.extend({
-        bar_series : ["default"],
-        bar_options : {
-		series: {	
-			bars: {
-                		show: true
-        		}
-    		}
-    }}, config);
+    	series : { "serie1":{
+        	data: {"January": 10, "February": 8, "March": 4, "April": 13, "May": 20, "June": 9},
+        	label: "serie 1",
+        	bars: {
+                	show: true,
+                	barWidth: 0.2,
+                	align: "left"
+            	}
+       	 
+    	},  "serie2":{
+        	data: {"January": 10, "February": 8, "March": 4, "April": 13, "May": 20, "June": 9},
+        	label: "series 2",
+        	bars: {
+                	show: true,
+                	barWidth: 0.2,
+                	align: "center"
+            	}
+    	},  "serie3":{
+        	data: {"January": 10, "February": 8, "March": 4, "April": 13, "May": 20, "June": 9},
+        	label: "series 3",
+        	bars: {
+                	show: true,
+                	barWidth: 0.2,
+                	align: "right"
+            	}
+    	}}
+    }, config);
 
-    // create empty barchart with parameter options
-    var plot = $.plot(this.$element, [],options.bar_options);
-
-    // dict containing the labels and values
-    var bardata_dict = {};
-    var bardata_series = {};
-
-    var initbar = function(series) {
-	for(var k in series) {
-	   bardata_series[series[k]] = {order:k,data:[]};
+    var bar_init = {
+            xaxis: {
+                mode: "categories",
+                tickLength: 0
+            }
 	}
+
+    var bardata_series = options.series;
+
+    var translate_bar = function() {
+        var result = [];
+	for(var k in bardata_series) {
+	    if (bardata_series.hasOwnProperty(k)) {
+		var newserie = jQuery.extend({}, bardata_series[k]);
+        	var newdata = [];
+		var data = newserie.data;
+		for(var l in data) {
+	    	    if (data.hasOwnProperty(l)) {
+			newdata.push([l,data[l]]);
+		    }
+		}
+		newserie.data = newdata;
+		result.push(newserie);
+	    }
+	}
+	return result;
     }
 
-    initbar(options.bar_series);
+    var plot = $.plot(this.$element, translate_bar(), bar_init);
 
-    var addbar = function(label, value) {
-	if (bardata_dict.hasOwnProperty(label))
-		bardata_dict[label] = (bardata_dict[label] + value);
+    var addbar = function(serie_label, category, value) {
+	var data = bardata_series[serie_label].data;
+	if (data.hasOwnProperty(category))
+		data[category] = (data[category] + value);
 	else
-		bardata_dict[label] = value;
+		data[category] = value;
 	redraw();
     }
 
-    var setbar = function(label, value) {
-	bardata_dict[label] = value;
+    var setbar = function(serie_label, category, value) {
+	var data = bardata_series[serie_label].data;
+	data[category] = value;
 	redraw();
     }
 
     var redraw = function() {
-        var result = [];
-	var bardata = [];
-	var bardata2 = [];
-	var cnt = 0;
-	for(var k in bardata_dict) {
-	    if (bardata_dict.hasOwnProperty(k)) {
- 		bardata.push([cnt,bardata_dict[k]]);
- 		bardata2.push([cnt,bardata_dict[k]+100]);
-	    }
-	    cnt++;
-	}
-	var xtra = { show : true };
- 	result.push({label:'MYLABEL',data:bardata, bars: { fill:true, show : true}});
- 	result.push({label:'MYLABEL2',data:bardata2, bars: {fill:true,  show : true }});
-	// console.log(result);
-        plot.setData(result);
+        plot.setData(translate_bar());
 	plot.setupGrid();
         plot.draw();
     }
 
     var reset = function() {
-	bardata_dict = {};
+	for(var k in bardata_series) {
+	    if (bardata_series.hasOwnProperty(k)) {
+		bardata_series[k].data = {};
+	    }
+	}
     }
 
     this.actions({
         'set': function(e, message) {
-	    setbar(message.value[0],message.value[1]);
+		setbar(message.series,message.value[0],message.value[1]);
         },
         'add': function(e, message) {
-	    addbar(message.value[0],message.value[1]);
+		addbar(message.series,message.value[0],message.value[1]);
         },
         'reset': function(e, message) {
-	    reset();
+		reset();
 	}
     });
     // return element to allow further work
