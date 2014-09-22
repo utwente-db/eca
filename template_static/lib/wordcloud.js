@@ -2,14 +2,17 @@
     // a simple wordcloud example
     block.fn.wordcloud = function(config) {
         var options = $.extend({
+			// weight=0 means word is not in cloud
 			weight_function : function(val,max) { return val; },
         }, config);
 
         var $container = $(this.$element);
         // create empty wordcloud with parameter options
 
-        // var wordcloud_el = $container.jQCloud([{ text: "TEXT", weight: 1 }]);
-        var wordcloud_el = $container.jQCloud([{}]);
+        var wordcloud_el = $container.jQCloud([{
+            text: "TEXT",
+            weight: 1
+        }]);
 
         // dict containing the labels and values
         var worddata_dict = {};
@@ -30,13 +33,18 @@
 
         var redraw = function() {
             var result = [];
+	    var max = 0;
 	    // incomplete, determine max
             for (var k in worddata_dict) {
                 if (worddata_dict.hasOwnProperty(k)) {
-                    result.push({
-                        text: k,
-                        weight: options.weight_function(worddata_dict[k])
-                    });
+			max = Math.max(max, worddata_dict[k]);
+	        }
+	    }
+            for (var k in worddata_dict) {
+                if (worddata_dict.hasOwnProperty(k)) {
+		    var w = options.weight_function(worddata_dict[k],max);
+		    if ( w > 0 )
+                        result.push({text: k, weight: w});
                 }
             }
             $($container).empty().jQCloud(result);
