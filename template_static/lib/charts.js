@@ -2,75 +2,83 @@
 
 // a simple rolling chart with memory
 block.fn.rolling_chart = function(config) {
+    // combine default configuration with user configuration
     var options = $.extend({
         memory: 100,
-        series: { serie : {label:"serie", color:'black'} }
+        series: {
+            'default': {data: []}
+        },
+        chart: {
+            xaxis: {
+                show: false
+            }
+        }
     }, config);
 
-    var handle_data = function(values) {
+    // maintain state for this block
+    var data = {};
+    for(var k in options.series) {
+        data[k] = (options.series[k].data || []).slice();
+    }
+
+    // function to project our state to something the library understands
+    var prepare_data = function() {
         var result = [];
 
-        for(var i in values) {
-            result.push([i, values[i]]);
+        // process each series
+        for(var k in data) {
+            var series = data[k];
+            var points = [];
+
+            // create point pairs and gap values
+            for(var i in series) {
+                if(series[i] == null) {
+                    points.push(null);
+                } else {
+                    points.push([i, series[i]]);
+                }
+            }
+
+            // combine state data with series configuration by user
+            result.push($.extend(options.series[k], {data: points}));
         }
+
         return result;
     };
 
-    var xo = { series: {
-            lines: { show: true },
-            points: {
-                radius: 3,
-                show: true,
-                fill: true
+    // initial setup of library state (also builds necessary HTML)
+    var plot = $.plot(this.$element, prepare_data(), options.chart);
+
+
+    // register actions for this block
+    this.actions({
+        'add': function(e, message) {
+            // if the 'value' field is used, update all series (useful with a single series)
+            if(typeof message.values == 'undefined' && typeof message.value != 'undefined') {
+                message.values = {}
+                for(var k in options.series) {
+                    message.values[k] = message.value;
+                }
             }
-        }};
 
-    var plot = $.plot(this.$element, [] , {});
+            // update all series
+            for(var k in options.series) {
+                // roll memory
+                if(data[k].length > options.memory) {
+                    data[k] = data[k].slice(1);
+                }
 
-    var reset = function() {
-        var result = options.series;
-	for(var k in result) {
-	    if (result.hasOwnProperty(k)) {
-	        result[k].databuffer = [];
-	    }
-	}
-	return result;
-    }
+                // insert value or gap
+                data[k].push(message.values[k] || null);
+            }
 
-    var plot_series = reset();
-
-    var add_to_serie = function(skey,value) {
-	var databuffer = plot_series[skey].databuffer;
-        if(databuffer.length > options.memory) {
-            plot_series[skey].databuffer = databuffer.slice(1);
-        }
-	databuffer.push(value);
-    }
-
-    var redraw = function(serie_value) {
-    	    var plot_current = [];
-	    var mykeys = Object.keys(plot_series);
-	    for(var mykey in mykeys) {
-		var skey = mykeys[mykey];
-		var serie = plot_series[skey];
-		// serie['databuffer'].push(serie_value[skey]);
-		add_to_serie(skey,serie_value[skey]);
-		serie['data'] = handle_data(serie['databuffer']);
-		plot_current.push(serie);
-	    }
-            plot.setData(plot_current);
+            // update HTML
+            plot.setData(prepare_data());
             plot.setupGrid();
             plot.draw();
         }
-
-    this.actions({
-        'add': function(e, message) {
-	    redraw(message.value);
-        },
-        'reset': function(e, message) {
-	    plot_series = reset();
-	}
     });
+
     // return element to allow further work
     return this.$element;
 }
