@@ -8,10 +8,8 @@
         var $container = $(this.$element);
         // create empty wordcloud with parameter options
 
-        var wordcloud_el = $container.jQCloud([{
-            text: "TEXT",
-            weight: 1
-        }]);
+        // var wordcloud_el = $container.jQCloud([{ text: "TEXT", weight: 1 }]);
+        var wordcloud_el = $container.jQCloud([{}]);
 
         // dict containing the labels and values
         var worddata_dict = {};
