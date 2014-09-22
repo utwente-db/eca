@@ -2,8 +2,8 @@
     // a simple wordcloud example
     block.fn.wordcloud = function(config) {
         var options = $.extend({
-			// weight=0 means word is not in cloud
-			weight_function : function(val,max) { return val; },
+                        // weight=0 means word is not in cloud
+                        weight_function : function(val,max) { return val; },
         }, config);
 
         var $container = $(this.$element);
@@ -30,17 +30,17 @@
 
         var redraw = function() {
             var result = [];
-	    var max = 0;
-	    // incomplete, determine max
+            var max = 0;
+            // incomplete, determine max
             for (var k in worddata_dict) {
                 if (worddata_dict.hasOwnProperty(k)) {
-			max = Math.max(max, worddata_dict[k]);
-	        }
-	    }
+                        max = Math.max(max, worddata_dict[k]);
+                }
+            }
             for (var k in worddata_dict) {
                 if (worddata_dict.hasOwnProperty(k)) {
-		    var w = options.weight_function(worddata_dict[k],max);
-		    if ( w > 0 )
+                    var w = options.weight_function(worddata_dict[k],max);
+                    if ( w > 0 )
                         result.push({text: k, weight: w});
                 }
             }
