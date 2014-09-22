@@ -16,7 +16,7 @@ def add_request_handlers(httpd):
 @event('init')
 def setup(ctx, e):
     # start the offline tweet stream
-    start_offline_tweets('data/batatweets.txt', 'chirp', time_factor=100000)
+    start_offline_tweets('data/bata_2014.txt', 'chirp', time_factor=100000)
     ctx.words = {}
 
 # simple word splitter
