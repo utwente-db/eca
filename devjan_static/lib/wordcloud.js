@@ -2,6 +2,7 @@
     // a simple wordcloud example
     block.fn.wordcloud = function(config) {
         var options = $.extend({
+			// weight=0 means word is not in cloud
 			weight_function : function(val,max) { return val; },
         }, config);
 
@@ -41,10 +42,9 @@
 	    }
             for (var k in worddata_dict) {
                 if (worddata_dict.hasOwnProperty(k)) {
-                    result.push({
-                        text: k,
-                        weight: options.weight_function(worddata_dict[k],max)
-                    });
+		    var w = options.weight_function(worddata_dict[k],max);
+		    if ( w > 0 )
+                        result.push({text: k, weight: w});
                 }
             }
             $($container).empty().jQCloud(result);
