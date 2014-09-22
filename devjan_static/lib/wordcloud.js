@@ -2,7 +2,7 @@
     // a simple wordcloud example
     block.fn.wordcloud = function(config) {
         var options = $.extend({
-			fweight : function(val) { return val; },
+			weight_function : function(val,max) { return val; },
         }, config);
 
         var $container = $(this.$element);
@@ -32,11 +32,18 @@
 
         var redraw = function() {
             var result = [];
+	    var max = 0;
+	    // incomplete, determine max
+            for (var k in worddata_dict) {
+                if (worddata_dict.hasOwnProperty(k)) {
+			max = Math.max(max, worddata_dict[k]);
+	        }
+	    }
             for (var k in worddata_dict) {
                 if (worddata_dict.hasOwnProperty(k)) {
                     result.push({
                         text: k,
-                        weight: options.fweight(worddata_dict[k])
+                        weight: options.weight_function(worddata_dict[k],max)
                     });
                 }
             }
