@@ -206,9 +206,17 @@ block.fn.barchart = function(config) {
 		var newserie = jQuery.extend({}, bardata_series[k]);
         	var newdata = [];
 		var data = newserie.data;
+		var max = 0;
+
 		for(var l in data) {
 	    	    if (data.hasOwnProperty(l)) {
-		        if ( options.filter_function(l,data[l],0) )
+                        max = Math.max(max, data[l]);
+		    }
+		}
+
+		for(var l in data) {
+	    	    if (data.hasOwnProperty(l)) {
+		        if ( options.filter_function(l,data[l],max) )
 			    newdata.push([l,data[l]]);
 		    }
 		}
@@ -315,9 +323,17 @@ block.fn.piechart = function(config) {
 
     var redraw = function() {
         var result = [];
+	var max = 0;
+
 	for(var k in piedata_dict) {
 	    if (piedata_dict.hasOwnProperty(k)) {
- 		result.push({label:k,data:piedata_dict[k]});
+                max = Math.max(max, piedata_dict[k]);
+	    }
+	}
+	for(var k in piedata_dict) {
+	    if (piedata_dict.hasOwnProperty(k)) {
+		if ( options.filter_function(k,piedata_dict[k],max) )
+ 		    result.push({label:k,data:piedata_dict[k]});
 	    }
 	}
         plot.setData(result);
