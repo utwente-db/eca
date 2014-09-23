@@ -290,9 +290,8 @@ block.fn.piechart = function(config) {
                 		show: true
         		}
     		},
-		legend: {
-		        show: false
-		}
+		// demo crashes with this option
+		// legend: { show: false }
     }}, config);
 
     // create empty piechart with parameter options
