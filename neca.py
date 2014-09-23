@@ -80,7 +80,7 @@ def main_engine(args, rules_module):
 
     # attach printing emit listener to context    
     def emitter(name, event):
-        print("emit '{}': {}".format(event.name, json.loads(event.json)))
+        print("emit '{}': {}".format(event.name, json.loads(event.get('json'))))
     context.channel.subscribe(emitter, 'emit')
 
     # fire main event
