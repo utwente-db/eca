@@ -174,32 +174,17 @@ block.fn.linechart = function(config) {
 // a simple barchart example
 block.fn.barchart = function(config) {
     var options = $.extend({
-    	series : { "serie1":{
-        	data: {"January": 10, "February": 8, "March": 4, "April": 13, "May": 20, "June": 9},
-        	label: "serie 1",
+        filter_function : function(category,val,max) { return true; },
+    	series : { "default":{
+        	data: {},
+        	label: "default",
         	bars: {
                 	show: true,
                 	barWidth: 0.2,
                 	align: "left"
             	}
        	 
-    	},  "serie2":{
-        	data: {"January": 10, "February": 8, "March": 4, "April": 13, "May": 20, "June": 9},
-        	label: "series 2",
-        	bars: {
-                	show: true,
-                	barWidth: 0.2,
-                	align: "center"
-            	}
-    	},  "serie3":{
-        	data: {"January": 10, "February": 8, "March": 4, "April": 13, "May": 20, "June": 9},
-        	label: "series 3",
-        	bars: {
-                	show: true,
-                	barWidth: 0.2,
-                	align: "right"
-            	}
-    	}}
+    	} }
     }, config);
 
     var bar_init = {
@@ -210,6 +195,9 @@ block.fn.barchart = function(config) {
 	}
 
     var bardata_series = options.series;
+    var bardata_first;
+
+    for (bardata_first in bardata_series) break;
 
     var translate_bar = function() {
         var result = [];
@@ -220,7 +208,8 @@ block.fn.barchart = function(config) {
 		var data = newserie.data;
 		for(var l in data) {
 	    	    if (data.hasOwnProperty(l)) {
-			newdata.push([l,data[l]]);
+		        if ( options.filter_function(l,data[l],0) )
+			    newdata.push([l,data[l]]);
 		    }
 		}
 		newserie.data = newdata;
@@ -233,7 +222,12 @@ block.fn.barchart = function(config) {
     var plot = $.plot(this.$element, translate_bar(), bar_init);
 
     var addbar = function(serie_label, category, value) {
-	var data = bardata_series[serie_label].data;
+    	var data;
+
+    	if ( serie_label == undefined )
+		data = bardata_series[bardata_first].data;
+	else 
+		data = bardata_series[serie_label].data;
 	if (data.hasOwnProperty(category))
 		data[category] = (data[category] + value);
 	else
@@ -242,7 +236,12 @@ block.fn.barchart = function(config) {
     }
 
     var setbar = function(serie_label, category, value) {
-	var data = bardata_series[serie_label].data;
+    	var data;
+
+    	if ( serie_label == undefined )
+		data = bardata_series[bardata_first].data;
+	else 
+		data = bardata_series[serie_label].data;
 	data[category] = value;
 	redraw();
     }
@@ -284,12 +283,16 @@ block.fn.barchart = function(config) {
 block.fn.piechart = function(config) {
     var options = $.extend({
     	// see: http://www.flotcharts.org/flot/examples/series-pie/
+        filter_function : function(category,val,max) { return true; },
         options : {
 		series: {	
 			pie: {
                 		show: true
         		}
-    		}
+    		},
+		legend: {
+		        show: false
+		}
     }}, config);
 
     // create empty piechart with parameter options

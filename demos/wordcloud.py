@@ -42,4 +42,12 @@ def tweet(ctx, e):
             'action': 'add',
             'value': (w, 1)
         })
+        emit('taart', {
+            'action': 'add',
+            'value': (str(w[0]), 1)
+        })
+        emit('balk', {
+            'action': 'add',
+            'value': (str(w[0]), 1)
+        })
 
