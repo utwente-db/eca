@@ -4,6 +4,7 @@
         var options = $.extend({
             filter_function : function(val,max) { return true; },
             weight_function : function(val,max) { return val; },
+	    options : {delayedMode: false}
         }, config);
 
         var $container = $(this.$element);
@@ -51,7 +52,7 @@
                         result.push({text: k, weight: options.weight_function(worddata_dict[k],max)});
                 }
             }
-            $($container).empty().jQCloud(result, {delayedMode: false});
+            $($container).empty().jQCloud(result,options.options);
 
             dirty = false;
             window.setTimeout(redraw, 500);

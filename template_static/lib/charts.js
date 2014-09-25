@@ -5,10 +5,11 @@ block.fn.rolling_chart = function(config) {
     // combine default configuration with user configuration
     var options = $.extend({
         memory: 100,
+	// required!!
         series: {
             'default': {data: []}
         },
-        chart: {
+        options: {
             xaxis: {
                 show: false
             }
@@ -47,7 +48,7 @@ block.fn.rolling_chart = function(config) {
     };
 
     // initial setup of library state (also builds necessary HTML)
-    var plot = $.plot(this.$element, prepare_data(), options.chart);
+    var plot = $.plot(this.$element, prepare_data(), options.options);
 
 
     // register actions for this block
@@ -90,6 +91,7 @@ block.fn.rolling_chart = function(config) {
 // a simple linechart example
 block.fn.linechart = function(config) {
     var options = $.extend({
+	// required
         series_names : ["default"],
         options : {
 		series: {	
@@ -175,6 +177,7 @@ block.fn.linechart = function(config) {
 block.fn.barchart = function(config) {
     var options = $.extend({
         filter_function : function(category,val,max) { return true; },
+	// required
     	series : { "default":{
         	data: {},
         	label: "default",
@@ -184,15 +187,13 @@ block.fn.barchart = function(config) {
                 	align: "left"
             	}
        	 
-    	} }
-    }, config);
-
-    var bar_init = {
-            xaxis: {
+    	} },
+	options: { xaxis: {
                 mode: "categories",
                 tickLength: 0
-            }
-	}
+            }}
+
+    }, config);
 
     var bardata_series = options.series;
     var bardata_first;
@@ -227,7 +228,7 @@ block.fn.barchart = function(config) {
 	return result;
     }
 
-    var plot = $.plot(this.$element, translate_bar(), bar_init);
+    var plot = $.plot(this.$element, translate_bar(), options.options);
 
     var addbar = function(serie_label, category, value) {
     	var data;
