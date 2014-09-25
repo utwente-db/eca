@@ -9,6 +9,7 @@ block.fn.rolling_chart = function(config) {
         series: {
             'default': {data: []}
         },
+	// flot initialization options
         options: {
             xaxis: {
                 show: false
@@ -92,7 +93,8 @@ block.fn.rolling_chart = function(config) {
 block.fn.linechart = function(config) {
     var options = $.extend({
 	// required
-        series_names : ["default"],
+        series : {default:{}},
+	// flot initialization options
         options : {
 		series: {	
 			lines: {
@@ -109,11 +111,13 @@ block.fn.linechart = function(config) {
 
     var initline = function(series) {
 	for(var k in series) {
-	   linedata_series[series[k]] = {order:k,data:[]};
+	   var si = series[k];
+	   si.data = [];
+	   linedata_series[k] = si;
 	}
     }
 
-    initline(options.series_names);
+    initline(options.series);
 
     var addline = function(label, values) {
     	var data;
@@ -151,7 +155,7 @@ block.fn.linechart = function(config) {
     }
 
     var reset = function() {
-	initline(options.series_names);
+	initline(options.series);
     }
 
     this.actions({
@@ -188,6 +192,7 @@ block.fn.barchart = function(config) {
             	}
        	 
     	} },
+	// flot initialization options
 	options: { xaxis: {
                 mode: "categories",
                 tickLength: 0
