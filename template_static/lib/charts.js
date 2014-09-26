@@ -103,12 +103,16 @@ block.fn.linechart = function(config) {
 
     // dict containing the labels and values
     var linedata_series = {};
+    var linedata_first;
 
     var initline = function(series) {
+	linedata_first = undefined;
 	for(var k in series) {
 	   var si = series[k];
 	   si.data = [];
 	   linedata_series[k] = si;
+	   if ( linedate_first == undefined )
+	       linedate_first = si;
 	}
     }
 
@@ -120,7 +124,7 @@ block.fn.linechart = function(config) {
 	if (linedata_series.hasOwnProperty(label))
 		data = linedata_series[label].data;
 	else
-		data = linedata_series['default'].data;
+		data = linedata_first.data;
 	for(var v in values) {
 		data.push(values[v]);
 	}
@@ -131,7 +135,7 @@ block.fn.linechart = function(config) {
 	if (linedata_series.hasOwnProperty(label))
 		linedata_series[label].data = values;
 	else
-		linedata_series['default'].data = values;
+		linedata_first.data = values;
 	redraw();
     }
 
