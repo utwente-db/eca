@@ -111,8 +111,8 @@ block.fn.linechart = function(config) {
 	   var si = series[k];
 	   si.data = [];
 	   linedata_series[k] = si;
-	   if ( linedate_first == undefined )
-	       linedate_first = si;
+	   if ( linedata_first == undefined )
+	       linedata_first = si;
 	}
     }
 
@@ -159,7 +159,7 @@ block.fn.linechart = function(config) {
 
     this.actions({
         'set': function(e, message) {
-	    addline(message.series, message.value);
+	    setline(message.series, message.value);
         },
         'add': function(e, message) {
 	    addline(message.series, message.value);
