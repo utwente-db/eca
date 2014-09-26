@@ -95,13 +95,8 @@ block.fn.linechart = function(config) {
 	// required
         series : {default:{}},
 	// flot initialization options
-        options : {
-		series: {	
-			lines: {
-                		show: true
-        		}
-    		}
-    }}, config);
+        options : {}
+    }, config);
 
     // create empty linechart with parameter options
     var plot = $.plot(this.$element, [],options.options);
