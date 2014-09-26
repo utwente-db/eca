@@ -2,9 +2,9 @@
     // a simple wordcloud example
     block.fn.wordcloud = function(config) {
         var options = $.extend({
-            filter_function : function(val,max) { return true; },
-            weight_function : function(val,max) { return val; },
-	    options : {delayedMode: false}
+            filter_function : function(cat,val,max) { return true; },
+            weight_function : function(cat,val,max) { return val; },
+            options : {}
         }, config);
 
         var $container = $(this.$element);
@@ -48,11 +48,16 @@
 
             for (var k in worddata_dict) {
                 if (worddata_dict.hasOwnProperty(k)) {
-                    if ( options.filter_function(worddata_dict[k],max) ) 
-                        result.push({text: k, weight: options.weight_function(worddata_dict[k],max)});
+                    var val = worddata_dict[k];
+                    if (options.filter_function(k,val,max)) {
+                        result.push({
+                            text: k,
+                            weight: options.weight_function(k,val,max)
+                        });
+                    }
                 }
             }
-            $($container).empty().jQCloud(result,options.options);
+            $($container).empty().jQCloud(result,$.extend(options.options,{delayedMode: false}));
 
             dirty = false;
             window.setTimeout(redraw, 500);

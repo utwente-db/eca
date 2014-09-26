@@ -24,13 +24,8 @@
 
 <script>
 block('#wolk').wordcloud({
-    filter_function: function(val, max) {
-        if(val < 3) return false; // do not display words seen less than X times
-        return true;
-    },
-    weight_function: function(val, max) {
-        if(val < 3) return 0; // do not display words seen less than X times
-        return val;
+    filter_function: function(cat, val, max) {
+        return val >= 3; // do not display words seen less than 3 times
     }
 });
 events.connect('word', '#wolk');
