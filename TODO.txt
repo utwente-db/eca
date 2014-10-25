@@ -18,4 +18,4 @@
 [x] Full speed tweet time_factor
 [x] Docs in graph.js
 [x] emit() in non-server context should doe something useful
-[ ] Rework rules set to non-global object
+[x] Rework rules set to non-global object
