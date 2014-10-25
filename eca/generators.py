@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 import json
 from . import fire, get_context, context_switch, register_auxiliary, auxiliary
+from . import arff
 import logging
 import sys
 
@@ -47,7 +48,7 @@ class EventGenerator:
                 fire(self.event_name, event)
 
     
-def offline_tweets(stop, data_file, time_factor=1000):
+def offline_tweets(stop, data_file, time_factor=1000, arff_file=None):
     """
     Offline tweet replay.
 
@@ -66,6 +67,11 @@ def offline_tweets(stop, data_file, time_factor=1000):
     # select timing function based on time_factor
     delayed = immediate if time_factor is None else delayer
 
+    arff_data = None
+    if arff_file:
+        arff_file = open(arff_file,'r')
+        arff_data = arff.load(arff_file)
+
     with open(data_file) as data:
         last_time = None
         lines = 0
@@ -74,6 +80,12 @@ def offline_tweets(stop, data_file, time_factor=1000):
 
             try:
                 tweet = json.loads(line)
+                if arff_file:
+                    try:
+                        extra_data = next(arff_data)
+                    except StopIteration:
+                        extra_data = None
+                    tweet['extra'] = extra_data
             except ValueError as e:
                 logger.error("Could not read tweet on {}:{} (reason: {})".format(data_file,lines, e))
                 continue
@@ -93,6 +105,8 @@ def offline_tweets(stop, data_file, time_factor=1000):
                 last_time = tweet_time
             else:
                 break
+        if arff:
+            arff_file.close()
 
       
 def start_offline_tweets(data_file, event_name='tweet', aux_name='tweeter', **kwargs):
