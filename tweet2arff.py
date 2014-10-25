@@ -30,9 +30,9 @@ def main():
     ]
 
     # create item generator
-    items = rows(tweets)
+    items = rows(args.file)
 
-    eca.arff.save(args.output, fields, items)
+    eca.arff.save(args.output, fields, items, name='ARFF for '+args.file.name)
 
 if __name__ == '__main__':
     main()
