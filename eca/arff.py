@@ -2,7 +2,7 @@
 ARFF format loading and saving module.
 
 This module implements the book version [1] of the ARFF format. This means there
-is not support for instance weights.
+is no support for instance weights.
 
 Known limitations:
   - This implementation does not parse dates
