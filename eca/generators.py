@@ -69,10 +69,10 @@ def offline_tweets(stop, data_file, time_factor=1000, arff_file=None):
 
     arff_data = None
     if arff_file:
-        arff_file = open(arff_file,'r')
+        arff_file = open(arff_file, 'r', encoding='utf-8')
         arff_data = arff.load(arff_file)
 
-    with open(data_file) as data:
+    with open(data_file, encoding='utf-8') as data:
         last_time = None
         lines = 0
         for line in data:
