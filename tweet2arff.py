@@ -5,16 +5,24 @@ import json
 
 import eca.arff
 
-def output_file_type(name):
+def file_type(mode):
     """Acts as an output file type for argparse. Always uses utf-8 encoding."""
-    if name == '-':
-        import sys
-        return sys.stdout
+    def handler(name):
+        if name == '-':
+            import sys
+            if 'r' in mode:
+                return sys.stdin
+            elif 'w' in mode:
+                return sys.stdout
+            else:
+                raise argparse.ArgumentTypeError("can't use mode '{}' for stdin/stdout".format(mode))
 
-    try:
-        return open(name, 'w', encoding='utf-8')
-    except OSError as e:
-        raise argparse.ArgumentTypeError("can't open '{}': {}".format(name, e))
+        try:
+            return open(name, mode, encoding='utf-8')
+        except OSError as e:
+            raise argparse.ArgumentTypeError("can't open '{}': {}".format(name, e))
+
+    return handler
 
 def rows(tweets):
     """
@@ -30,8 +38,8 @@ def main():
     Main program entry point.
     """
     parser = argparse.ArgumentParser(description='Tweet data to ARFF converter')
-    parser.add_argument('file', type=argparse.FileType('r'), help='Twitter data source')
-    parser.add_argument('output', type=output_file_type, help='Output file')
+    parser.add_argument('file', type=file_type('r'), help='Twitter data source')
+    parser.add_argument('output', type=file_type('w'), help='Output file')
     args = parser.parse_args()
 
     # attribute description
