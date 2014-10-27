@@ -105,7 +105,7 @@ def offline_tweets(stop, data_file, time_factor=1000, arff_file=None):
                 last_time = tweet_time
             else:
                 break
-        if arff:
+        if arff_file:
             arff_file.close()
 
       
