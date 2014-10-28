@@ -85,6 +85,9 @@ def offline_tweets(stop, data_file, time_factor=1000, arff_file=None):
                         extra_data = next(arff_data)
                     except StopIteration:
                         extra_data = None
+                    except ValueError as e:
+                        logger.error("Could not read arff line for tweet (reason: {})".format(e))
+                        extra_data = None
                     tweet['extra'] = extra_data
             except ValueError as e:
                 logger.error("Could not read tweet on {}:{} (reason: {})".format(data_file,lines, e))
