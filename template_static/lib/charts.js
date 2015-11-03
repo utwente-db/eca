@@ -342,6 +342,7 @@ block.fn.piechart = function(config) {
 	    }
 	}
         plot.setData(result);
+        plot.setupGrid();
         plot.draw();
     }
 
