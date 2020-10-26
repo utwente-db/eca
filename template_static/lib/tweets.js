@@ -118,7 +118,7 @@ block.fn.tweets = function(config) {
         $list.prepend($item);
 
         // remove stale tweets
-        if ($list.children().size() > options.memory) {
+        if ($list.children().length > options.memory) {
             $list.children().last().remove();
         }
     });
