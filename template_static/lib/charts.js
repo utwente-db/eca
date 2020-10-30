@@ -70,7 +70,7 @@ block.fn.rolling_chart = function(config) {
                     data[k] = data[k].slice(1);
                 }
 
-                // insert value
+                // insert value or gap (in case of null)
                 data[k].push(message.values[k]);
             }
 
