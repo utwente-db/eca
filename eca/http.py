@@ -102,7 +102,7 @@ def GenerateEvent(name):
                 self.request.send_error(400, "Bad request: "+str(e))
                 return
 
-            if not isinstance(structured, collections.Mapping):
+            if not isinstance(structured, collections.abc.Mapping):
                 self.request.send_error(400, "Bad request: expect a JSON object")
                 return
 

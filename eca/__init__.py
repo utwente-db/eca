@@ -121,7 +121,7 @@ class Event:
 
     def __str__(self):
         data_strings = []
-        if isinstance(self.data, collections.Mapping):
+        if isinstance(self.data, collections.abc.Mapping):
             for k, v in self.data.items():
                 data_strings.append("{}={}".format(k, v))
         else:

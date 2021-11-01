@@ -1,5 +1,6 @@
 from http.cookies import SimpleCookie
-from collections import namedtuple, Mapping
+from collections import namedtuple
+from collections.abc import Mapping
 from itertools import product, chain
 import time
 import random
