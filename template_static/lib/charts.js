@@ -70,8 +70,8 @@ block.fn.rolling_chart = function(config) {
                     data[k] = data[k].slice(1);
                 }
 
-                // insert value or gap
-                data[k].push(message.values[k] || null);
+                // insert value or gap (in case of null)
+                data[k].push(message.values[k]);
             }
 
             // update HTML
