@@ -203,6 +203,10 @@ class HTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     HTTP Server with path/method registration functionality to allow simple
     configuration of served content.
     """
+    
+    # Don't keep running requests from blocking the server shutdown
+    daemon_threads = True
+    
     def __init__(self, server_address, RequestHandlerClass=HTTPRequestHandler):
         self.handlers = []
         self.filters = []
